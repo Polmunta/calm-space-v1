@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+
+# expo
+.expo/
+dist/
+web-build/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env files (claves)
+.env
+.env.local
+.env.*.local
+
+# OS / editor
+.DS_Store
+*.swp
+.vscode/
