@@ -40,3 +40,5 @@ yarn-error.*
 /ios
 /android
 
+# Audio pesado (no subir WAV)
+assets/audio/*.wav
