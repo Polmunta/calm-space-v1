@@ -9,8 +9,9 @@ import { SESSIONS, type MeditationSession } from "./meditations.data";
 import { setLastSession } from "./meditations.storage";
 
 function mmss(totalSeconds: number) {
-  const m = Math.floor(totalSeconds / 60);
-  const s = totalSeconds % 60;
+  const safe = Math.max(0, Math.floor(totalSeconds));
+  const m = Math.floor(safe / 60);
+  const s = safe % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
@@ -131,6 +132,7 @@ export default function MeditationPlayerScreen({ route }: any) {
       try {
         await soundRef.current.setPositionAsync(0);
       } catch {}
+
       if (mountedRef.current) {
         setIsPlaying(false);
         setPosSec(0);
@@ -140,7 +142,7 @@ export default function MeditationPlayerScreen({ route }: any) {
     }
   };
 
-  // ✅ PASO ACTIVO usando rangos fromSec/toSec (modelo nuevo)
+  // ✅ PASO ACTIVO usando rangos fromSec/toSec
   const activeStepIndex = useMemo(() => {
     if (!session) return 0;
 
@@ -148,10 +150,9 @@ export default function MeditationPlayerScreen({ route }: any) {
       (s) => posSec >= s.fromSec && posSec < s.toSec
     );
 
-    // si no encaja por redondeos, elegimos el último paso válido
     if (idx === -1) {
-      if (posSec < session.steps[0].fromSec) return 0;
-      return session.steps.length - 1;
+      if (posSec < (session.steps[0]?.fromSec ?? 0)) return 0;
+      return Math.max(0, session.steps.length - 1);
     }
 
     return idx;
@@ -166,13 +167,14 @@ export default function MeditationPlayerScreen({ route }: any) {
     );
   }
 
-  // Mostrar duración real si ya está cargada; si no, usa minutesLabel si existe; si no, estimación del último toSec
+  // ✅ Duración fallback (sin minutesLabel obligatorio)
+  const lastToSec = session.steps[session.steps.length - 1]?.toSec ?? 0;
   const fallbackTotal =
-    (session.minutesLabel && session.minutesLabel) ||
-    mmss(session.steps[session.steps.length - 1]?.toSec ?? 0);
+    (typeof (session as any).minutesLabel === "string" && (session as any).minutesLabel) ||
+    mmss(lastToSec);
 
   const totalLabel = durSec > 0 ? mmss(durSec) : fallbackTotal;
-  const posLabel = mmss(clamp(posSec, 0, Math.max(0, durSec || 99999)));
+  const posLabel = mmss(clamp(posSec, 0, Math.max(0, durSec || lastToSec || 99999)));
 
   const progressPct = durSec > 0 ? clamp((posSec / durSec) * 100, 0, 100) : 0;
 
@@ -217,6 +219,12 @@ export default function MeditationPlayerScreen({ route }: any) {
               <Text style={styles.stopText}>Detener</Text>
             </Pressable>
           </View>
+
+          {!isLoaded ? (
+            <Text style={styles.loadingHint}>
+              Cargando audio…
+            </Text>
+          ) : null}
         </View>
       </View>
 
@@ -231,8 +239,11 @@ export default function MeditationPlayerScreen({ route }: any) {
         renderItem={({ item, index }) => {
           const active = index === activeStepIndex;
 
-          // rango visual del paso
-          const range = `${mmss(item.fromSec)}–${mmss(item.toSec)}`;
+          // ✅ Duración del paso (más útil para el usuario)
+          const stepDuration = mmss(item.toSec - item.fromSec);
+
+          // Si prefieres mostrar rango, usa esto:
+          // const range = `${mmss(item.fromSec)}–${mmss(item.toSec)}`;
 
           return (
             <View style={[styles.stepCard, active && styles.stepActive]}>
@@ -241,7 +252,7 @@ export default function MeditationPlayerScreen({ route }: any) {
                 <Text style={[styles.stepText, active && styles.stepTextActive]}>
                   {item.title}
                 </Text>
-                <Text style={styles.stepTime}>{range}</Text>
+                <Text style={styles.stepTime}>{stepDuration}</Text>
               </View>
             </View>
           );
@@ -306,6 +317,13 @@ const styles = StyleSheet.create({
     borderColor: "rgba(198, 183, 226, 0.35)",
   },
   stopText: { color: colors.text, fontWeight: "900", fontSize: 13 },
+
+  loadingHint: {
+    marginTop: 8,
+    fontSize: 12,
+    fontWeight: "800",
+    color: "rgba(255,255,255,0.85)",
+  },
 
   stepsTitle: { fontSize: 14, fontWeight: "900", color: colors.text, marginBottom: 10 },
   stepCard: {

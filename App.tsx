@@ -1,5 +1,4 @@
 import React from "react";
-import { StyleSheet } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
@@ -12,12 +11,6 @@ import SOSScreen from "./src/features/sos/SOSScreen";
 import SOSDetailScreen from "./src/features/sos/SOSDetailScreen";
 import MeditationsScreen from "./src/features/meditations/MeditationsScreen";
 import MeditationPlayerScreen from "./src/features/meditations/MeditationPlayerScreen";
-
-
-
-
-
-
 
 const Stack = createNativeStackNavigator();
 
@@ -33,8 +26,9 @@ export default function App() {
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{ title: "Calm Space" }}
+          options={{ headerShown: false }}
         />
+
         <Stack.Screen
           name="Breathing"
           component={BreathingScreen}
@@ -55,29 +49,27 @@ export default function App() {
           component={SoundsScreen}
           options={{ title: "Sonidos" }}
         />
-        <Stack.Screen 
-          name="SOS" 
-          component={SOSScreen} 
+        <Stack.Screen
+          name="SOS"
+          component={SOSScreen}
           options={{ title: "SOS 60s" }}
         />
-        <Stack.Screen 
-          name="SOSDetail" 
-          component={SOSDetailScreen} 
-          options={{ title: "SOS" }} 
-        />
-        <Stack.Screen 
-          name="Meditations" 
-          component={MeditationsScreen} 
-          options={{ title: "Meditaciones" }} 
-        />
-        <Stack.Screen 
-          name="MeditationPlayer" 
-          component={MeditationPlayerScreen} 
-          options={{ title: "Sesión" }} 
+        <Stack.Screen
+          name="SOSDetail"
+          component={SOSDetailScreen}
+          options={{ title: "SOS" }}
         />
 
-
-
+        <Stack.Screen
+          name="Meditations"
+          component={MeditationsScreen}
+          options={{ title: "Meditaciones" }}
+        />
+        <Stack.Screen
+          name="MeditationPlayer"
+          component={MeditationPlayerScreen}
+          options={{ title: "Sesión" }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

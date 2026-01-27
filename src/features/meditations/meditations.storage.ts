@@ -1,51 +1,33 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const KEY_FAVORITES = "calmspace.meditations.favorites.v1";
+const KEY_FAVS = "calmspace.meditations.favs.v1";
 const KEY_LAST = "calmspace.meditations.last.v1";
 
-export type SessionId = "meditacion" | "relajacion";
-
-export async function getFavorites(): Promise<SessionId[]> {
+export async function getFavorites(): Promise<string[]> {
+  const raw = await AsyncStorage.getItem(KEY_FAVS);
+  if (!raw) return [];
   try {
-    const raw = await AsyncStorage.getItem(KEY_FAVORITES);
-    if (!raw) return [];
     const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? (arr as SessionId[]) : [];
+    return Array.isArray(arr) ? arr.map(String) : [];
   } catch {
     return [];
   }
 }
 
-export async function toggleFavorite(id: SessionId): Promise<SessionId[]> {
-  const current = await getFavorites();
-  const next = current.includes(id) ? current.filter((x) => x !== id) : [id, ...current];
-  await AsyncStorage.setItem(KEY_FAVORITES, JSON.stringify(next));
+export async function toggleFavorite(id: string): Promise<string[]> {
+  const favs = await getFavorites();
+  const set = new Set(favs);
+  if (set.has(id)) set.delete(id);
+  else set.add(id);
+  const next = Array.from(set);
+  await AsyncStorage.setItem(KEY_FAVS, JSON.stringify(next));
   return next;
 }
 
-export async function getLastSession(): Promise<{ id: SessionId; at: number } | null> {
-  try {
-    const raw = await AsyncStorage.getItem(KEY_LAST);
-    if (!raw) return null;
-    const obj = JSON.parse(raw);
-    if (!obj?.id) return null;
-    return { id: obj.id as SessionId, at: Number(obj.at ?? Date.now()) };
-  } catch {
-    return null;
-  }
+export async function setLastSession(id: string) {
+  await AsyncStorage.setItem(KEY_LAST, id);
 }
 
-export async function setLastSession(id: SessionId) {
-  try {
-    await AsyncStorage.setItem(KEY_LAST, JSON.stringify({ id, at: Date.now() }));
-  } catch {}
-}
-
-export function formatWhen(ts: number) {
-  const d = new Date(ts);
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mi = String(d.getMinutes()).padStart(2, "0");
-  return `${dd}/${mm} ${hh}:${mi}`;
+export async function getLastSession(): Promise<string | null> {
+  return AsyncStorage.getItem(KEY_LAST);
 }
