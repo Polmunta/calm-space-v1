@@ -142,13 +142,37 @@ export default function MeditationPlayerScreen({ route }: any) {
     }
   };
 
+  // ✅ NUEVO: saltar a un paso (seek)
+  const seekTo = async (sec: number) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+
+    try {
+      await loadIfNeeded();
+      if (!soundRef.current) return;
+
+      const ms = Math.max(0, Math.floor(sec * 1000));
+      try {
+        await soundRef.current.setPositionAsync(ms);
+      } catch {}
+
+      // Para UX: si estaba pausado, arrancamos
+      const st: any = await soundRef.current.getStatusAsync();
+      if (st?.isLoaded && !st.isPlaying) {
+        try {
+          await soundRef.current.playAsync();
+        } catch {}
+      }
+    } finally {
+      busyRef.current = false;
+    }
+  };
+
   // ✅ PASO ACTIVO usando rangos fromSec/toSec
   const activeStepIndex = useMemo(() => {
     if (!session) return 0;
 
-    const idx = session.steps.findIndex(
-      (s) => posSec >= s.fromSec && posSec < s.toSec
-    );
+    const idx = session.steps.findIndex((s) => posSec >= s.fromSec && posSec < s.toSec);
 
     if (idx === -1) {
       if (posSec < (session.steps[0]?.fromSec ?? 0)) return 0;
@@ -203,11 +227,7 @@ export default function MeditationPlayerScreen({ route }: any) {
               onPress={playPause}
               style={({ pressed }) => [styles.playBtn, pressed && { opacity: 0.9 }]}
             >
-              <MaterialCommunityIcons
-                name={isPlaying ? "pause" : "play"}
-                size={20}
-                color="#fff"
-              />
+              <MaterialCommunityIcons name={isPlaying ? "pause" : "play"} size={20} color="#fff" />
               <Text style={styles.playText}>{isPlaying ? "Pausar" : "Reproducir"}</Text>
             </Pressable>
 
@@ -220,17 +240,13 @@ export default function MeditationPlayerScreen({ route }: any) {
             </Pressable>
           </View>
 
-          {!isLoaded ? (
-            <Text style={styles.loadingHint}>
-              Cargando audio…
-            </Text>
-          ) : null}
+          {!isLoaded ? <Text style={styles.loadingHint}>Cargando audio…</Text> : null}
         </View>
       </View>
 
       <View style={{ height: 14 }} />
 
-      <Text style={styles.stepsTitle}>Pasos</Text>
+      <Text style={styles.stepsTitle}>Pasos (toca para saltar)</Text>
 
       <FlatList
         data={session.steps}
@@ -239,14 +255,17 @@ export default function MeditationPlayerScreen({ route }: any) {
         renderItem={({ item, index }) => {
           const active = index === activeStepIndex;
 
-          // ✅ Duración del paso (más útil para el usuario)
           const stepDuration = mmss(item.toSec - item.fromSec);
 
-          // Si prefieres mostrar rango, usa esto:
-          // const range = `${mmss(item.fromSec)}–${mmss(item.toSec)}`;
-
           return (
-            <View style={[styles.stepCard, active && styles.stepActive]}>
+            <Pressable
+              onPress={() => seekTo(item.fromSec)}
+              style={({ pressed }) => [
+                styles.stepCard,
+                active && styles.stepActive,
+                pressed && { opacity: 0.92 },
+              ]}
+            >
               <View style={styles.stepRow}>
                 <View style={[styles.stepDot, active && styles.stepDotActive]} />
                 <Text style={[styles.stepText, active && styles.stepTextActive]}>
@@ -254,7 +273,7 @@ export default function MeditationPlayerScreen({ route }: any) {
                 </Text>
                 <Text style={styles.stepTime}>{stepDuration}</Text>
               </View>
-            </View>
+            </Pressable>
           );
         }}
       />
