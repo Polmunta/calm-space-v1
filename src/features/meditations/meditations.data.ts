@@ -11,6 +11,7 @@ export type MeditationSession = {
   audio: any; // require(...)
   cover: any; // require(...)
   minutesLabel?: string; // opcional (si no, se mostrará cuando se cargue el audio)
+  recommended?: boolean;
   steps: MeditationStep[];
 };
 
@@ -36,6 +37,7 @@ export const SESSIONS: MeditationSession[] = [
     description: "Relaja el cuerpo poco a poco y suelta tensión acumulada.",
     audio: require("../../../assets/audio/relajacion_completa.mp3"),
     cover: require("../../../assets/meditations/relajacion.png"), // cambia si tu imagen se llama distinto
+    recommended: true,
     minutesLabel: "22:04",
     steps: [
       { title: "Acomodarte", fromSec: 0, toSec: 180 },
