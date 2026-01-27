@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { View, Text } from "react-native";
 import { screenStyles } from "../../shared/ui/screenStyles";
+import { useFocusEffect } from "@react-navigation/native";
+
+
 
 export default function BreathingScreen() {
   return (

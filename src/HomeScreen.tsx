@@ -1,11 +1,15 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable, Image } from "react-native";
+import { View, Text, StyleSheet, Pressable, Image, ScrollView } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { colors } from "./shared/theme/colors";
 
 export default function HomeScreen({ navigation }: any) {
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Brand */}
       <View style={styles.header}>
         <View style={styles.brandRow}>
@@ -25,7 +29,7 @@ export default function HomeScreen({ navigation }: any) {
 
       {/* SOS grande */}
       <Pressable
-        onPress={() => navigation.navigate("SOS")}
+        onPress={() => navigation.navigate("TabSOS")}
         style={({ pressed }) => [styles.sosCard, pressed && styles.cardPressed]}
       >
         <View style={styles.cardRow}>
@@ -45,7 +49,7 @@ export default function HomeScreen({ navigation }: any) {
       {/* Grid */}
       <View style={styles.grid}>
         <Pressable
-          onPress={() => navigation.navigate("Breathing")}
+          onPress={() => navigation.navigate("TabBreathing")}
           style={({ pressed }) => [styles.gridCard, pressed && styles.cardPressed]}
         >
           <View style={styles.gridIconWrap}>
@@ -56,7 +60,7 @@ export default function HomeScreen({ navigation }: any) {
         </Pressable>
 
         <Pressable
-          onPress={() => navigation.navigate("Mindfulness")}
+          onPress={() => navigation.navigate("TabMindfulness")}
           style={({ pressed }) => [styles.gridCard, pressed && styles.cardPressed]}
         >
           <View style={styles.gridIconWrap}>
@@ -68,7 +72,7 @@ export default function HomeScreen({ navigation }: any) {
         </Pressable>
 
         <Pressable
-          onPress={() => navigation.navigate("Sounds")}
+          onPress={() => navigation.navigate("TabSounds")}
           style={({ pressed }) => [styles.gridCard, pressed && styles.cardPressed]}
         >
           <View style={styles.gridIconWrap}>
@@ -79,11 +83,11 @@ export default function HomeScreen({ navigation }: any) {
         </Pressable>
 
         <Pressable
-          onPress={() => navigation.navigate("Meditations")}
+          onPress={() => navigation.navigate("TabMeditations")}
           style={({ pressed }) => [styles.gridCard, pressed && styles.cardPressed]}
         >
           <View style={styles.gridIconWrap}>
-            {/* ✅ Meditaciones usa “meditación” */}
+            {/* ✅ Meditaciones */}
             <MaterialCommunityIcons name="meditation" size={22} color={colors.primary} />
           </View>
           <Text style={styles.gridTitle}>Meditaciones</Text>
@@ -93,7 +97,7 @@ export default function HomeScreen({ navigation }: any) {
 
       {/* Diario grande (abajo) */}
       <Pressable
-        onPress={() => navigation.navigate("Journal")}
+        onPress={() => navigation.navigate("TabJournal")}
         style={({ pressed }) => [styles.journalCard, pressed && styles.cardPressed]}
       >
         <View style={styles.cardRow}>
@@ -109,12 +113,21 @@ export default function HomeScreen({ navigation }: any) {
           <MaterialCommunityIcons name="chevron-right" size={22} color={colors.primary} />
         </View>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: 20, paddingTop: 22 },
+  screen: { flex: 1, backgroundColor: colors.background },
+
+  // ✅ aquí está la clave del centrado
+  container: {
+    flexGrow: 1,
+    padding: 20,
+    paddingTop: 26,
+    paddingBottom: 26,
+    justifyContent: "center",
+  },
 
   header: { marginBottom: 14 },
   brandRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12 },
@@ -130,9 +143,9 @@ const styles = StyleSheet.create({
   },
   brandIcon: { width: 28, height: 28, opacity: 0.95 },
   brandTitle: {
-    fontSize: 38, // ✅ más grande
+    fontSize: 38,
     fontWeight: "900",
-    color: colors.primary, // ✅ lila fuerte
+    color: colors.primary,
     letterSpacing: 0.2,
   },
   subtitle: {

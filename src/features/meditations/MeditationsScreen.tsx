@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, Pressable, Image, FlatList } from "react-native";
+import { View, Text, StyleSheet, Pressable, Image, FlatList, ImageBackground } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { colors } from "../../shared/theme/colors";
 import { screenStyles } from "../../shared/ui/screenStyles";
@@ -33,7 +33,17 @@ export default function MeditationsScreen({ navigation }: any) {
         onPress={() => navigation.navigate("MeditationPlayer", { id: item.id })}
         style={({ pressed }) => [styles.card, pressed && { opacity: 0.92 }]}
       >
-        <Image source={item.cover} style={styles.cover} />
+        {/* ✅ IMAGEN: fondo blur + imagen completa (contain). No se recorta */}
+        <ImageBackground
+          source={item.cover}
+          style={styles.media}
+          blurRadius={18}
+          resizeMode="cover"
+        >
+          <View style={styles.mediaOverlay} />
+          <Image source={item.cover} style={styles.mediaImg} resizeMode="contain" />
+        </ImageBackground>
+
         <View style={styles.cardBody}>
           <View style={styles.row}>
             <Text style={styles.title}>{item.title}</Text>
@@ -96,11 +106,30 @@ const styles = StyleSheet.create({
     borderColor: "rgba(198, 183, 226, 0.35)",
     overflow: "hidden",
   },
-  cover: { width: "100%", height: 140 },
+
+  // ✅ Marco visual para que la imagen se vea entera y bonita
+  media: {
+    width: "100%",
+    height: 150, // ajusta si quieres más/menos alto
+    backgroundColor: "rgba(198, 183, 226, 0.14)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  mediaOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(250, 249, 252, 0.10)", // velo suave para que el blur no “ensucie”
+  },
+  mediaImg: {
+    width: "92%",
+    height: "92%",
+  },
+
   cardBody: { padding: 14 },
+
   row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   title: { fontSize: 16, fontWeight: "900", color: colors.text },
   desc: { marginTop: 6, fontSize: 13, color: "rgba(74,74,74,0.7)", fontWeight: "700" },
+
   badges: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
   badge: {
     paddingHorizontal: 10,
