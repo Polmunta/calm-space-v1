@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View, Text, Pressable, StyleSheet, FlatList } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
@@ -12,7 +12,10 @@ type SOSItem = {
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
   detailTitle: string;
   steps: string[];
-  suggest: { breathing?: boolean; sounds?: boolean };
+  suggest?: {
+    breathingModeId?: "calma" | "ansiedad" | "dormir" | "foco" | "cuerpo";
+    soundId?: "lluvia" | "olas" | "bosque" | "rio" | "tormenta";
+  };
 };
 
 const SOS_ITEMS: SOSItem[] = [
@@ -25,10 +28,10 @@ const SOS_ITEMS: SOSItem[] = [
     steps: [
       "1) Suelta hombros y mandíbula.",
       "2) Exhala largo 3 veces (como si empañaras un cristal).",
-      "3) Respira 4-4-6 durante 6 ciclos.",
+      "3) Respira 4-2-6 durante 6 ciclos.",
       "4) Nombra 5 cosas que ves.",
     ],
-    suggest: { breathing: true, sounds: true },
+    suggest: { breathingModeId: "ansiedad", soundId: "lluvia" },
   },
   {
     id: "overwhelmed",
@@ -41,7 +44,7 @@ const SOS_ITEMS: SOSItem[] = [
       "2) Elige 1 tarea pequeña (máx 5 min).",
       "3) Elige 1 cosa que puedes dejar para mañana.",
     ],
-    suggest: { breathing: true },
+    suggest: { breathingModeId: "calma", soundId: "rio" },
   },
   {
     id: "sleep",
@@ -54,7 +57,7 @@ const SOS_ITEMS: SOSItem[] = [
       "2) Exhala lento 8 segundos x 6 veces.",
       "3) Relaja la lengua (al paladar suave) y la frente.",
     ],
-    suggest: { sounds: true, breathing: true },
+    suggest: { breathingModeId: "dormir", soundId: "olas" },
   },
   {
     id: "sad",
@@ -67,7 +70,7 @@ const SOS_ITEMS: SOSItem[] = [
       "2) Dite: ‘Esto es difícil, y no estoy sola en sentirlo’.",
       "3) Escribe una frase: ‘Hoy necesito…’.",
     ],
-    suggest: { sounds: true },
+    suggest: { breathingModeId: "calma", soundId: "rio" },
   },
   {
     id: "focus",
@@ -80,7 +83,7 @@ const SOS_ITEMS: SOSItem[] = [
       "2) Elige 1 micro-tarea (5 min).",
       "3) Empieza sin perfección. Solo empezar.",
     ],
-    suggest: { breathing: true },
+    suggest: { breathingModeId: "foco", soundId: "bosque" },
   },
   {
     id: "body",
@@ -93,22 +96,33 @@ const SOS_ITEMS: SOSItem[] = [
       "2) Aprieta puños 3s y suelta 6s (x3).",
       "3) Gira cuello suave a ambos lados.",
     ],
-    suggest: { sounds: true },
+    suggest: { breathingModeId: "cuerpo", soundId: "lluvia" },
   },
 ];
 
 export default function SOSScreen({ navigation }: any) {
+  // ✅ orden “humano”: primero ansiedad y dormir (lo más típico)
+  const data = useMemo(() => {
+    const priority = ["anxiety", "sleep"];
+    return [...SOS_ITEMS].sort((a, b) => {
+      const pa = priority.indexOf(a.id);
+      const pb = priority.indexOf(b.id);
+      if (pa === -1 && pb === -1) return 0;
+      if (pa === -1) return 1;
+      if (pb === -1) return -1;
+      return pa - pb;
+    });
+  }, []);
+
   return (
     <View style={screenStyles.container}>
       <View style={screenStyles.header}>
         <Text style={screenStyles.title}>SOS 60s</Text>
-        <Text style={screenStyles.subtitle}>
-          Accesos rápidos para volver a la calma.
-        </Text>
+        <Text style={screenStyles.subtitle}>Accesos rápidos para volver a la calma.</Text>
       </View>
 
       <FlatList
-        data={SOS_ITEMS}
+        data={data}
         keyExtractor={(i) => i.id}
         contentContainerStyle={{ gap: 12, paddingBottom: 12 }}
         renderItem={({ item }) => (
@@ -118,16 +132,32 @@ export default function SOSScreen({ navigation }: any) {
           >
             <View style={styles.row}>
               <View style={styles.iconWrap}>
-                <MaterialCommunityIcons
-                  name={item.icon}
-                  size={22}
-                  color={colors.primary}
-                />
+                <MaterialCommunityIcons name={item.icon} size={22} color={colors.primary} />
               </View>
+
               <View style={{ flex: 1 }}>
                 <Text style={styles.titleText}>{item.title}</Text>
                 <Text style={styles.subText}>{item.subtitle}</Text>
+
+                {(item.suggest?.breathingModeId || item.suggest?.soundId) ? (
+                  <View style={styles.badges}>
+                    {item.suggest?.breathingModeId ? (
+                      <View style={styles.badge}>
+                        <MaterialCommunityIcons name="weather-windy" size={14} color={colors.primary} />
+                        <Text style={styles.badgeText}>Respiración</Text>
+                      </View>
+                    ) : null}
+                    {item.suggest?.soundId ? (
+                      <View style={styles.badge}>
+                        <MaterialCommunityIcons name="music-note-outline" size={14} color={colors.primary} />
+                        <Text style={styles.badgeText}>Sonidos</Text>
+                      </View>
+                    ) : null}
+                  </View>
+                ) : null}
               </View>
+
+              <MaterialCommunityIcons name="chevron-right" size={22} color="rgba(74,74,74,0.45)" />
             </View>
           </Pressable>
         )}
@@ -144,15 +174,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(198, 183, 226, 0.35)",
   },
-  cardPressed: {
-    transform: [{ scale: 0.985 }],
-    opacity: 0.92,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
+  cardPressed: { transform: [{ scale: 0.985 }], opacity: 0.92 },
+  row: { flexDirection: "row", alignItems: "center", gap: 12 },
   iconWrap: {
     width: 42,
     height: 42,
@@ -161,14 +184,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  titleText: {
-    fontSize: 16,
-    fontWeight: "900",
-    color: colors.text,
+  titleText: { fontSize: 16, fontWeight: "900", color: colors.text },
+  subText: { marginTop: 4, fontSize: 13, color: "rgba(74, 74, 74, 0.7)", fontWeight: "700" },
+
+  badges: { flexDirection: "row", gap: 8, marginTop: 10, flexWrap: "wrap" },
+  badge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.85)",
+    borderWidth: 1,
+    borderColor: "rgba(198, 183, 226, 0.35)",
   },
-  subText: {
-    marginTop: 4,
-    fontSize: 13,
-    color: "rgba(74, 74, 74, 0.7)",
-  },
+  badgeText: { fontSize: 12, fontWeight: "900", color: "rgba(74,74,74,0.75)" },
 });

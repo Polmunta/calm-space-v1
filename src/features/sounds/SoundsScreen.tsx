@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -28,18 +29,39 @@ const SOUNDS: SoundItem[] = [
   { id: "tormenta", title: "Tormenta", file: require("../../../assets/audio/tormenta.wav"), icon: "weather-lightning-rainy" },
 ];
 
-export default function SoundsScreen() {
-  const soundRef = useRef<Audio.Sound | null>(null);
+type StopReason = "blur" | "unmount" | "manual" | "autoplay";
 
-  // Candado para que play/stop no se pisen (evita “colgados”)
+export default function SoundsScreen({ route, navigation }: any) {
+  const soundRef = useRef<Audio.Sound | null>(null);
   const busyRef = useRef(false);
 
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [stopping, setStopping] = useState(false);
 
-  // ✅ Sí: en bucle
   const LOOP = true;
+
+  const stopAndUnloadForced = useCallback(async (_reason: StopReason) => {
+    setStopping(true);
+    try {
+      if (soundRef.current) {
+        try { await soundRef.current.pauseAsync(); } catch {}
+        try { await soundRef.current.unloadAsync(); } catch {}
+        soundRef.current = null;
+      }
+      setPlayingId(null);
+    } finally {
+      setLoadingId(null);
+      setStopping(false);
+      busyRef.current = false;
+    }
+  }, []);
+
+  const stopAndUnload = useCallback(async (reason: StopReason) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    await stopAndUnloadForced(reason);
+  }, [stopAndUnloadForced]);
 
   useEffect(() => {
     (async () => {
@@ -54,65 +76,40 @@ export default function SoundsScreen() {
     })();
 
     return () => {
-      (async () => {
-        if (soundRef.current) {
-          try {
-            await soundRef.current.unloadAsync();
-          } catch {}
-          soundRef.current = null;
-        }
-      })();
+      void stopAndUnloadForced("unmount");
     };
-  }, []);
+  }, [stopAndUnloadForced]);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        void stopAndUnloadForced("blur");
+      };
+    }, [stopAndUnloadForced])
+  );
 
   const stop = async () => {
-    if (busyRef.current) return;
-    busyRef.current = true;
-    setStopping(true);
-
-    try {
-      if (soundRef.current) {
-        try {
-          // pause suele ser más fiable que stop en algunos móviles
-          await soundRef.current.pauseAsync();
-        } catch {}
-
-        try {
-          await soundRef.current.unloadAsync();
-        } catch {}
-
-        soundRef.current = null;
-      }
-      setPlayingId(null);
-    } finally {
-      setLoadingId(null);
-      setStopping(false);
-      busyRef.current = false;
-    }
+    await stopAndUnload("manual");
   };
 
-  const play = async (item: SoundItem) => {
+  const play = useCallback(async (item: SoundItem, _reason: StopReason = "manual") => {
     if (busyRef.current) return;
     busyRef.current = true;
 
-    // Toggle: si pulsas el que ya suena → parar
+    // Toggle
     if (playingId === item.id) {
-      busyRef.current = false; // liberamos para que stop pueda entrar
-      await stop();
+      busyRef.current = false;
+      await stopAndUnload("manual");
       return;
     }
 
     setLoadingId(item.id);
 
     try {
-      // Paramos lo anterior (si lo hay)
+      // Parar anterior
       if (soundRef.current) {
-        try {
-          await soundRef.current.pauseAsync();
-        } catch {}
-        try {
-          await soundRef.current.unloadAsync();
-        } catch {}
+        try { await soundRef.current.pauseAsync(); } catch {}
+        try { await soundRef.current.unloadAsync(); } catch {}
         soundRef.current = null;
         setPlayingId(null);
       }
@@ -131,7 +128,29 @@ export default function SoundsScreen() {
       setLoadingId(null);
       busyRef.current = false;
     }
-  };
+  }, [LOOP, playingId, stopAndUnload]);
+
+  // ✅ AutoPlay desde SOS
+  useFocusEffect(
+    useCallback(() => {
+      const autoId = route?.params?.autoPlayId as string | undefined;
+      if (!autoId) return;
+
+      const item = SOUNDS.find((s) => s.id === autoId);
+      if (!item) return;
+
+      const t = setTimeout(() => {
+        // si ya suena otro, cambiamos
+        void play(item, "autoplay");
+
+        try {
+          navigation.setParams({ autoPlayId: undefined });
+        } catch {}
+      }, 150);
+
+      return () => clearTimeout(t);
+    }, [route?.params?.autoPlayId, navigation, play])
+  );
 
   const renderItem = ({ item }: { item: SoundItem }) => {
     const isPlaying = playingId === item.id;
@@ -139,12 +158,12 @@ export default function SoundsScreen() {
 
     return (
       <Pressable
-        onPress={() => play(item)}
-        disabled={stopping} // si está deteniendo, no dejamos tocar
+        onPress={() => void play(item, "manual")}
+        disabled={stopping}
         style={({ pressed }) => [
           styles.tile,
           isPlaying && styles.tileActive,
-          (pressed && !stopping) && { opacity: 0.9 },
+          pressed && !stopping && { opacity: 0.9 },
           stopping && { opacity: 0.7 },
         ]}
       >
@@ -187,7 +206,7 @@ export default function SoundsScreen() {
       />
 
       <Pressable
-        onPress={stop}
+        onPress={() => void stop()}
         disabled={!playingId || stopping || !!loadingId}
         style={({ pressed }) => [
           styles.stopBtn,
@@ -195,9 +214,7 @@ export default function SoundsScreen() {
           pressed && playingId && !stopping && !loadingId && { opacity: 0.9 },
         ]}
       >
-        <Text style={styles.stopText}>
-          {stopping ? "Deteniendo…" : "Detener"}
-        </Text>
+        <Text style={styles.stopText}>{stopping ? "Deteniendo…" : "Detener"}</Text>
       </Pressable>
     </View>
   );
@@ -213,9 +230,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(198, 183, 226, 0.35)",
     minHeight: 120,
   },
-  tileActive: {
-    borderColor: colors.primary,
-  },
+  tileActive: { borderColor: colors.primary },
   iconCircle: {
     width: 44,
     height: 44,
@@ -227,24 +242,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 10,
   },
-  tileTitle: {
-    fontSize: 15,
-    fontWeight: "900",
-    color: colors.text,
-  },
-  tileFooter: {
-    marginTop: 6,
-  },
-  statusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  tileMeta: {
-    fontSize: 12,
-    color: "rgba(74, 74, 74, 0.7)",
-    fontWeight: "700",
-  },
+  tileTitle: { fontSize: 15, fontWeight: "900", color: colors.text },
+  tileFooter: { marginTop: 6 },
+  statusRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  tileMeta: { fontSize: 12, color: "rgba(74, 74, 74, 0.7)", fontWeight: "700" },
   stopBtn: {
     marginTop: 10,
     backgroundColor: colors.primary,
@@ -252,12 +253,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: "center",
   },
-  stopBtnDisabled: {
-    opacity: 0.6,
-  },
-  stopText: {
-    color: "#fff",
-    fontWeight: "900",
-    fontSize: 14,
-  },
+  stopBtnDisabled: { opacity: 0.6 },
+  stopText: { color: "#fff", fontWeight: "900", fontSize: 14 },
 });

@@ -15,6 +15,10 @@ export default function SOSDetailScreen({ route, navigation }: any) {
     );
   }
 
+  const breathingModeId = item?.suggest?.breathingModeId;
+  const soundId = item?.suggest?.soundId;
+
+
   return (
     <View style={screenStyles.container}>
       <View style={screenStyles.header}>
@@ -32,23 +36,33 @@ export default function SOSDetailScreen({ route, navigation }: any) {
 
       <View style={{ height: 12 }} />
 
-      {item.suggest?.breathing && (
+      {breathingModeId ? (
         <Pressable
-          onPress={() => navigation.navigate("Breathing")}
+          onPress={() =>
+            navigation.navigate("TabBreathing", {
+              screen: "Breathing",
+              params: { modeId: breathingModeId },
+            })
+          }
           style={({ pressed }) => [styles.primaryBtn, pressed && { opacity: 0.9 }]}
         >
           <Text style={styles.primaryText}>Ir a Respiración</Text>
         </Pressable>
-      )}
+      ) : null}
 
-      {item.suggest?.sounds && (
+      {soundId ? (
         <Pressable
-          onPress={() => navigation.navigate("Sounds")}
+          onPress={() =>
+            navigation.navigate("TabSounds", {
+              screen: "Sounds",
+              params: { autoPlayId: soundId },
+            })
+          }
           style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.9 }]}
         >
           <Text style={styles.secondaryText}>Ir a Sonidos</Text>
         </Pressable>
-      )}
+      ) : null}
     </View>
   );
 }
@@ -74,11 +88,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: "center",
   },
-  primaryText: {
-    color: "#fff",
-    fontWeight: "900",
-    fontSize: 14,
-  },
+  primaryText: { color: "#fff", fontWeight: "900", fontSize: 14 },
   secondaryBtn: {
     marginTop: 10,
     backgroundColor: "rgba(255,255,255,0.9)",
@@ -88,9 +98,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(198, 183, 226, 0.35)",
   },
-  secondaryText: {
-    color: colors.text,
-    fontWeight: "900",
-    fontSize: 14,
-  },
+  secondaryText: { color: colors.text, fontWeight: "900", fontSize: 14 },
 });

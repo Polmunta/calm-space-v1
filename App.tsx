@@ -119,6 +119,7 @@ export default function App() {
             height: 74,
             paddingTop: 10,
             paddingBottom: Platform.OS === "android" ? 20 : 26, // ✅ sube la barra
+            marginBottom: 2, // 👈 sube la barra (prueba 6–12)
           },
           tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
           tabBarIcon: ({ color, size }) => {

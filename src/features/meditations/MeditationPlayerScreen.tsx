@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, StyleSheet, Pressable, FlatList, Image } from "react-native";
 import { Audio } from "expo-av";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { colors } from "../../shared/theme/colors";
@@ -18,6 +19,8 @@ function mmss(totalSeconds: number) {
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
+
+type StopReason = "blur" | "unmount" | "manual";
 
 export default function MeditationPlayerScreen({ route }: any) {
   const { id } = route.params as { id: "meditacion" | "relajacion" };
@@ -36,6 +39,33 @@ export default function MeditationPlayerScreen({ route }: any) {
   const [posSec, setPosSec] = useState(0);
   const [durSec, setDurSec] = useState(0);
 
+  // ✅ stop “forzado”: entra aunque busy=true (para blur/unmount)
+  const stopAndUnloadForced = useCallback(async (_reason: StopReason) => {
+    try {
+      if (soundRef.current) {
+        try { await soundRef.current.stopAsync(); } catch {}
+        try { await soundRef.current.unloadAsync(); } catch {}
+        soundRef.current = null;
+      }
+
+      if (mountedRef.current) {
+        setIsPlaying(false);
+        setIsLoaded(false);
+        setPosSec(0);
+        // durSec lo dejamos (no molesta)
+      }
+    } finally {
+      busyRef.current = false;
+    }
+  }, []);
+
+  // ✅ stop normal (respeta busy)
+  const stopAndUnload = useCallback(async (reason: StopReason) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    await stopAndUnloadForced(reason);
+  }, [stopAndUnloadForced]);
+
   useEffect(() => {
     mountedRef.current = true;
 
@@ -52,18 +82,20 @@ export default function MeditationPlayerScreen({ route }: any) {
 
     return () => {
       mountedRef.current = false;
-      (async () => {
-        if (soundRef.current) {
-          try {
-            await soundRef.current.unloadAsync();
-          } catch {}
-          soundRef.current = null;
-        }
-      })();
+      void stopAndUnloadForced("unmount");
     };
-  }, []);
+  }, [stopAndUnloadForced]);
 
-  const loadIfNeeded = async () => {
+  // ✅ al salir de la pantalla (cambio de tab / back / navegar a otra)
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        void stopAndUnloadForced("blur");
+      };
+    }, [stopAndUnloadForced])
+  );
+
+  const loadIfNeeded = useCallback(async () => {
     if (!session) return;
     if (soundRef.current) return;
 
@@ -93,9 +125,8 @@ export default function MeditationPlayerScreen({ route }: any) {
       }
     });
 
-    // Guardamos “última sesión” al abrir la pantalla
     void setLastSession(session.id);
-  };
+  }, [session]);
 
   const playPause = async () => {
     if (busyRef.current) return;
@@ -121,28 +152,10 @@ export default function MeditationPlayerScreen({ route }: any) {
   };
 
   const stop = async () => {
-    if (busyRef.current) return;
-    busyRef.current = true;
-
-    try {
-      if (!soundRef.current) return;
-      try {
-        await soundRef.current.stopAsync();
-      } catch {}
-      try {
-        await soundRef.current.setPositionAsync(0);
-      } catch {}
-
-      if (mountedRef.current) {
-        setIsPlaying(false);
-        setPosSec(0);
-      }
-    } finally {
-      busyRef.current = false;
-    }
+    await stopAndUnload("manual");
   };
 
-  // ✅ NUEVO: saltar a un paso (seek)
+  // ✅ saltar a un paso (seek)
   const seekTo = async (sec: number) => {
     if (busyRef.current) return;
     busyRef.current = true;
@@ -156,7 +169,6 @@ export default function MeditationPlayerScreen({ route }: any) {
         await soundRef.current.setPositionAsync(ms);
       } catch {}
 
-      // Para UX: si estaba pausado, arrancamos
       const st: any = await soundRef.current.getStatusAsync();
       if (st?.isLoaded && !st.isPlaying) {
         try {
@@ -168,7 +180,6 @@ export default function MeditationPlayerScreen({ route }: any) {
     }
   };
 
-  // ✅ PASO ACTIVO usando rangos fromSec/toSec
   const activeStepIndex = useMemo(() => {
     if (!session) return 0;
 
@@ -191,7 +202,6 @@ export default function MeditationPlayerScreen({ route }: any) {
     );
   }
 
-  // ✅ Duración fallback (sin minutesLabel obligatorio)
   const lastToSec = session.steps[session.steps.length - 1]?.toSec ?? 0;
   const fallbackTotal =
     (typeof (session as any).minutesLabel === "string" && (session as any).minutesLabel) ||
@@ -199,7 +209,6 @@ export default function MeditationPlayerScreen({ route }: any) {
 
   const totalLabel = durSec > 0 ? mmss(durSec) : fallbackTotal;
   const posLabel = mmss(clamp(posSec, 0, Math.max(0, durSec || lastToSec || 99999)));
-
   const progressPct = durSec > 0 ? clamp((posSec / durSec) * 100, 0, 100) : 0;
 
   return (
@@ -254,12 +263,11 @@ export default function MeditationPlayerScreen({ route }: any) {
         contentContainerStyle={{ gap: 10, paddingBottom: 12 }}
         renderItem={({ item, index }) => {
           const active = index === activeStepIndex;
-
           const stepDuration = mmss(item.toSec - item.fromSec);
 
           return (
             <Pressable
-              onPress={() => seekTo(item.fromSec)}
+              onPress={() => void seekTo(item.fromSec)}
               style={({ pressed }) => [
                 styles.stepCard,
                 active && styles.stepActive,
@@ -268,9 +276,7 @@ export default function MeditationPlayerScreen({ route }: any) {
             >
               <View style={styles.stepRow}>
                 <View style={[styles.stepDot, active && styles.stepDotActive]} />
-                <Text style={[styles.stepText, active && styles.stepTextActive]}>
-                  {item.title}
-                </Text>
+                <Text style={[styles.stepText, active && styles.stepTextActive]}>{item.title}</Text>
                 <Text style={styles.stepTime}>{stepDuration}</Text>
               </View>
             </Pressable>
