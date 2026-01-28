@@ -1,10 +1,31 @@
-import React from "react";
+import React, { useEffect, useMemo } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { colors } from "../../shared/theme/colors";
+import { incrementSOSUsage } from "./sos.storage";
+
+const MODE_LABEL: Record<string, string> = {
+  calma: "Calma (4–4–6)",
+  antiestres: "Anti-estrés (4–2–6)",
+  cuadrada: "Cuadrada (4–4–4–4)",
+  suave: "Suave (3–1–5)",
+  sueno: "Sueño (4–0–8)",
+};
+
+const SOUND_LABEL: Record<string, string> = {
+  lluvia: "Lluvia",
+  olas: "Olas",
+  bosque: "Bosque",
+  rio: "Río",
+  tormenta: "Tormenta",
+};
 
 export default function SOSDetailScreen({ route, navigation }: any) {
   const item = route?.params?.item;
+
+  useEffect(() => {
+    if (item?.id) void incrementSOSUsage(item.id);
+  }, [item?.id]);
 
   if (!item) {
     return (
@@ -15,15 +36,25 @@ export default function SOSDetailScreen({ route, navigation }: any) {
     );
   }
 
-  const breathingModeId = item?.suggest?.breathingModeId;
-  const soundId = item?.suggest?.soundId;
+  const breathingModeId = item?.suggest?.breathingModeId as string | undefined;
+  const soundId = item?.suggest?.soundId as string | undefined;
 
+  const suggestionText = useMemo(() => {
+    const a = breathingModeId ? MODE_LABEL[breathingModeId] : "";
+    const b = soundId ? SOUND_LABEL[soundId] : "";
+    if (a && b) return `Sugerencia: ${a} + ${b}`;
+    if (a) return `Sugerencia: ${a}`;
+    if (b) return `Sugerencia: ${b}`;
+    return "";
+  }, [breathingModeId, soundId]);
 
   return (
     <View style={screenStyles.container}>
       <View style={screenStyles.header}>
         <Text style={screenStyles.title}>{item.detailTitle}</Text>
         <Text style={screenStyles.subtitle}>Un minuto. Un paso.</Text>
+
+        {suggestionText ? <Text style={styles.suggestion}>{suggestionText}</Text> : null}
       </View>
 
       <View style={styles.card}>
@@ -68,6 +99,12 @@ export default function SOSDetailScreen({ route, navigation }: any) {
 }
 
 const styles = StyleSheet.create({
+  suggestion: {
+    marginTop: 8,
+    fontSize: 12,
+    fontWeight: "800",
+    color: "rgba(74,74,74,0.65)",
+  },
   card: {
     backgroundColor: colors.primarySoft,
     borderRadius: 18,

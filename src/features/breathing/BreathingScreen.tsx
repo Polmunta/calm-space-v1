@@ -8,17 +8,19 @@ import {
   FlatList,
   Animated,
   Easing,
+  ScrollView,
+  Switch,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Audio } from "expo-av";
+import * as Haptics from "expo-haptics";
 
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { colors } from "../../shared/theme/colors";
 
-type ModeId = "calma" | "ansiedad" | "dormir" | "foco" | "cuerpo";
-
 type Mode = {
-  id: ModeId;
+  id: "calma" | "antiestres" | "cuadrada" | "suave" | "sueno";
   title: string;
   subtitle: string;
   inhale: number;
@@ -31,46 +33,46 @@ const MODES: Mode[] = [
   {
     id: "calma",
     title: "Calma (4–4–6)",
-    subtitle: "Baja revoluciones y vuelve al centro.",
+    subtitle: "Para bajar revoluciones y volver al centro.",
     inhale: 4,
     hold: 4,
     exhale: 6,
     rest: 0,
   },
   {
-    id: "ansiedad",
-    title: "Ansiedad (4–2–6)",
-    subtitle: "Útil cuando estás acelerado o con nervios.",
+    id: "antiestres",
+    title: "Anti-estrés (4–2–6)",
+    subtitle: "Rápida y efectiva cuando estás acelerado.",
     inhale: 4,
     hold: 2,
     exhale: 6,
     rest: 0,
   },
   {
-    id: "dormir",
-    title: "Dormir (4–0–8)",
-    subtitle: "Exhala más largo para soltar tensión y conciliar sueño.",
-    inhale: 4,
-    hold: 0,
-    exhale: 8,
-    rest: 0,
-  },
-  {
-    id: "foco",
-    title: "Foco (4–4–4–4)",
-    subtitle: "Equilibra y estabiliza: perfecto para concentrarte.",
+    id: "cuadrada",
+    title: "Cuadrada (4–4–4–4)",
+    subtitle: "Equilibra, enfoca y estabiliza.",
     inhale: 4,
     hold: 4,
     exhale: 4,
     rest: 4,
   },
   {
-    id: "cuerpo",
-    title: "Soltar cuerpo (3–1–5)",
-    subtitle: "Suave y progresivo para descargar tensión corporal.",
+    id: "suave",
+    title: "Suave (3–1–5)",
+    subtitle: "Ideal para empezar si eres principiante.",
     inhale: 3,
     hold: 1,
     exhale: 5,
+    rest: 0,
+  },
+  {
+    id: "sueno",
+    title: "Sueño (4–0–8)",
+    subtitle: "Exhala más largo para soltar tensión y dormir mejor.",
+    inhale: 4,
+    hold: 0,
+    exhale: 8,
     rest: 0,
   },
 ];
@@ -81,10 +83,35 @@ function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
 
-export default function BreathingScreen({ route, navigation }: any) {
-  const initialModeId = ((route?.params?.modeId as ModeId | undefined) ?? "calma");
+function mmssFromSeconds(totalSeconds: number) {
+  const safe = Math.max(0, Math.floor(totalSeconds));
+  const m = Math.floor(safe / 60);
+  const s = safe % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
 
-  const [modeId, setModeId] = useState<ModeId>(initialModeId);
+type AmbientId = "lluvia" | "olas" | "bosque";
+
+const AMBIENT_BY_MODE: Record<Mode["id"], AmbientId> = {
+  calma: "lluvia",
+  antiestres: "lluvia",
+  sueno: "olas",
+  cuadrada: "bosque",
+  suave: "lluvia",
+};
+
+const AMBIENT_FILES: Record<AmbientId, any> = {
+  lluvia: require("../../../assets/audio/lluvia.wav"),
+  olas: require("../../../assets/audio/olas.wav"),
+  bosque: require("../../../assets/audio/bosque.wav"),
+};
+
+type TotalPreset = "libre" | "5" | "10";
+
+export default function BreathingScreen({ route }: any) {
+  const initialModeId = (route?.params?.modeId as Mode["id"] | undefined) ?? MODES[0].id;
+
+  const [modeId, setModeId] = useState<Mode["id"]>(initialModeId);
   const mode = useMemo(() => MODES.find((m) => m.id === modeId) ?? MODES[0], [modeId]);
 
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -94,41 +121,166 @@ export default function BreathingScreen({ route, navigation }: any) {
   const [phaseLeft, setPhaseLeft] = useState(0);
   const [breathsDone, setBreathsDone] = useState(0);
 
+  // ⏱️ tiempo total
+  const [totalPreset, setTotalPreset] = useState<TotalPreset>("libre");
+  const totalLimitSec = totalPreset === "5" ? 5 * 60 : totalPreset === "10" ? 10 * 60 : null;
+  const [totalElapsed, setTotalElapsed] = useState(0);
+
+  const remainingSec =
+    totalLimitSec == null ? null : Math.max(0, totalLimitSec - totalElapsed);
+
+  // 🔈 sonido ambiente
+  const [ambientOn, setAmbientOn] = useState(false);
+  const ambientSoundRef = useRef<Audio.Sound | null>(null);
+  const ambientBusyRef = useRef(false);
+
   const runningRef = useRef(false);
 
-  const tickTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const phaseTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const tickTimerRef = useRef<any>(null);
+  const phaseTimerRef = useRef<any>(null);
+  const countdownTimerRef = useRef<any>(null);
+  const totalTimerRef = useRef<any>(null);
 
   const scale = useRef(new Animated.Value(0.55)).current;
   const glow = useRef(new Animated.Value(0.35)).current;
 
-  // ✅ si entras desde SOS con preset, actualiza modo y limpia param
+  // ✅ si entras desde SOS con preset, actualiza modo
   useEffect(() => {
-    const nextId = route?.params?.modeId as ModeId | undefined;
+    const nextId = route?.params?.modeId as Mode["id"] | undefined;
     if (nextId && nextId !== modeId) {
-      onReset();
+      void onReset();
       setModeId(nextId);
-      try {
-        navigation.setParams({ modeId: undefined });
-      } catch {}
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route?.params?.modeId]);
+
+  // ---------- AUDIO MODE ----------
+  useEffect(() => {
+    (async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          staysActiveInBackground: false,
+          playsInSilentModeIOS: true,
+          shouldDuckAndroid: true,
+        });
+      } catch {}
+    })();
+  }, []);
 
   const clearAllTimers = () => {
     if (tickTimerRef.current) clearInterval(tickTimerRef.current);
     if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
     if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+    if (totalTimerRef.current) clearInterval(totalTimerRef.current);
+
     tickTimerRef.current = null;
     phaseTimerRef.current = null;
     countdownTimerRef.current = null;
+    totalTimerRef.current = null;
   };
 
   const stopAnimations = () => {
     scale.stopAnimation();
     glow.stopAnimation();
   };
+
+  const stopAmbient = useCallback(async () => {
+    if (ambientBusyRef.current) return;
+    ambientBusyRef.current = true;
+    try {
+      if (ambientSoundRef.current) {
+        try {
+          await ambientSoundRef.current.pauseAsync();
+        } catch {}
+        try {
+          await ambientSoundRef.current.unloadAsync();
+        } catch {}
+        ambientSoundRef.current = null;
+      }
+    } finally {
+      ambientBusyRef.current = false;
+    }
+  }, []);
+
+  const startAmbient = useCallback(async () => {
+    if (!ambientOn) return;
+
+    const ambientId = AMBIENT_BY_MODE[mode.id] ?? "lluvia";
+    const file = AMBIENT_FILES[ambientId];
+    if (!file) return;
+
+    // re-crea limpio
+    await stopAmbient();
+
+    try {
+      const { sound } = await Audio.Sound.createAsync(file, {
+        shouldPlay: true,
+        isLooping: true,
+        volume: 0.35,
+      });
+      ambientSoundRef.current = sound;
+    } catch {
+      // ignore
+    }
+  }, [ambientOn, mode.id, stopAmbient]);
+
+  // si cambias modo y ambient está ON → cambia el ambiente al sugerido
+  useEffect(() => {
+    if (!ambientOn) return;
+    void startAmbient();
+  }, [modeId, ambientOn, startAmbient]);
+
+  const stopEverything = useCallback(async () => {
+    runningRef.current = false;
+    clearAllTimers();
+    stopAnimations();
+
+    setPhase("idle");
+    setCountdown(3);
+    setPhaseLeft(0);
+    setBreathsDone(0);
+    setTotalElapsed(0);
+
+    Animated.timing(scale, {
+      toValue: 0.55,
+      duration: 260,
+      useNativeDriver: true,
+      easing: Easing.out(Easing.quad),
+    }).start();
+
+    Animated.timing(glow, {
+      toValue: 0.35,
+      duration: 260,
+      useNativeDriver: true,
+      easing: Easing.out(Easing.quad),
+    }).start();
+
+    await stopAmbient();
+  }, [glow, scale, stopAmbient]);
+
+  // ✅ al salir de la pantalla: detener TODO
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        void stopEverything();
+      };
+    }, [stopEverything])
+  );
+
+  const onToggleAmbient = useCallback(
+    async (next: boolean) => {
+      setAmbientOn(next);
+
+      if (!next) {
+        await stopAmbient(); // ✅ APAGAR = parar SIEMPRE
+        return;
+      }
+
+      await startAmbient(); // ✅ ENCENDER = arrancar
+    },
+    [startAmbient, stopAmbient]
+  );
 
   const animateToOver = (toScale: number, durationMs: number) => {
     stopAnimations();
@@ -148,43 +300,27 @@ export default function BreathingScreen({ route, navigation }: any) {
     ]).start();
   };
 
-  const stopEverything = useCallback(() => {
-    runningRef.current = false;
-    clearAllTimers();
-    stopAnimations();
+  const hapticPhase = async (next: Phase) => {
+    try {
+      if (next === "inhale") await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      if (next === "hold") await Haptics.selectionAsync();
+      if (next === "exhale") await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      if (next === "rest") await Haptics.selectionAsync();
+    } catch {}
+  };
 
-    setPhase("idle");
-    setCountdown(3);
-    setPhaseLeft(0);
-
-    Animated.timing(scale, {
-      toValue: 0.55,
-      duration: 260,
-      useNativeDriver: true,
-      easing: Easing.out(Easing.quad),
-    }).start();
-
-    Animated.timing(glow, {
-      toValue: 0.35,
-      duration: 260,
-      useNativeDriver: true,
-      easing: Easing.out(Easing.quad),
-    }).start();
-  }, [glow, scale]);
-
-  // ✅ al salir de pantalla: detener
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        stopEverything();
-      };
-    }, [stopEverything])
-  );
+  const startTotalTimer = () => {
+    if (totalTimerRef.current) clearInterval(totalTimerRef.current);
+    totalTimerRef.current = setInterval(() => {
+      setTotalElapsed((t) => t + 1);
+    }, 1000);
+  };
 
   const startPhase = (next: Phase) => {
     if (!runningRef.current) return;
 
     setPhase(next);
+    void hapticPhase(next);
 
     const secs =
       next === "inhale"
@@ -199,7 +335,6 @@ export default function BreathingScreen({ route, navigation }: any) {
 
     setPhaseLeft(secs);
 
-    // Animación suave
     if (next === "inhale") animateToOver(1.05, secs * 1000);
     if (next === "hold") {
       stopAnimations();
@@ -213,13 +348,11 @@ export default function BreathingScreen({ route, navigation }: any) {
     if (next === "exhale") animateToOver(0.6, secs * 1000);
     if (next === "rest") animateToOver(0.55, secs * 1000);
 
-    // tick
     if (tickTimerRef.current) clearInterval(tickTimerRef.current);
     tickTimerRef.current = setInterval(() => {
       setPhaseLeft((prev) => clamp(prev - 1, 0, 9999));
     }, 1000);
 
-    // avance de fase
     if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
     phaseTimerRef.current = setTimeout(() => {
       if (!runningRef.current) return;
@@ -241,14 +374,32 @@ export default function BreathingScreen({ route, navigation }: any) {
     }, secs * 1000);
   };
 
-  const startCountdownThenRun = () => {
+  // ✅ auto-stop si eliges 5/10 min
+  useEffect(() => {
+    if (!runningRef.current) return;
+    if (totalLimitSec == null) return;
+
+    if (totalElapsed >= totalLimitSec) {
+      void stopEverything();
+    }
+  }, [totalElapsed, totalLimitSec, stopEverything]);
+
+  const startCountdownThenRun = async () => {
     clearAllTimers();
     runningRef.current = true;
+
     setBreathsDone(0);
+    setTotalElapsed(0);
+
     setCountdown(3);
     setPhase("countdown");
 
     animateToOver(0.75, 300);
+
+    startTotalTimer();
+
+    if (ambientOn) await startAmbient();
+    else await stopAmbient();
 
     countdownTimerRef.current = setInterval(() => {
       setCountdown((c) => {
@@ -264,8 +415,7 @@ export default function BreathingScreen({ route, navigation }: any) {
     }, 1000);
   };
 
-  // ✅ Pausa/reanuda sin romper continuidad
-  const onPressStartPause = () => {
+  const onPressStartPause = async () => {
     const isRunningPhase =
       phase === "inhale" || phase === "hold" || phase === "exhale" || phase === "rest";
 
@@ -274,37 +424,45 @@ export default function BreathingScreen({ route, navigation }: any) {
       clearAllTimers();
       stopAnimations();
       setPhase("paused");
+
+      try {
+        if (ambientSoundRef.current) await ambientSoundRef.current.pauseAsync();
+      } catch {}
       return;
     }
 
     if (phase === "paused") {
       runningRef.current = true;
+      startTotalTimer();
 
-      // reanuda fase “lógica” (si no tenemos left, reentra en inhale)
-      const resumePhase: Phase =
-        phaseLeft > 0
-          ? (phase === "paused" ? "inhale" : "inhale")
-          : "inhale";
+      try {
+        if (ambientOn && ambientSoundRef.current) await ambientSoundRef.current.playAsync();
+        if (ambientOn && !ambientSoundRef.current) await startAmbient();
+      } catch {}
 
-      // ✅ lo más estable: reanudar desde inhale si estabas pausado
-      // (si quisieras continuidad exacta por milisegundo, habría que guardar timestamps)
-      startPhase(resumePhase);
+      startPhase("inhale");
       return;
     }
 
-    startCountdownThenRun();
+    await startCountdownThenRun();
   };
 
-  const onReset = () => {
+  async function onReset() {
     runningRef.current = false;
     clearAllTimers();
     stopAnimations();
+
     setBreathsDone(0);
+    setTotalElapsed(0);
+
     setPhase("idle");
     setCountdown(3);
     setPhaseLeft(0);
+
     animateToOver(0.55, 260);
-  };
+
+    await stopAmbient();
+  }
 
   const phaseLabel =
     phase === "idle"
@@ -336,127 +494,207 @@ export default function BreathingScreen({ route, navigation }: any) {
       ? "Exhala"
       : "Pausa";
 
+  const cycleSeconds = mode.inhale + mode.hold + mode.exhale + mode.rest;
+
   return (
     <View style={screenStyles.container}>
-      <View style={screenStyles.header}>
-        <Text style={screenStyles.title}>Ejercicio de Respiración</Text>
-        <Text style={screenStyles.subtitle}>
-          Sigue la guía visual para practicar respiración consciente. Elige el modo que más te encaje hoy.
-        </Text>
-      </View>
-
-      <View style={styles.card}>
-        <Pressable
-          onPress={() => setPickerOpen(true)}
-          style={({ pressed }) => [styles.modeBtn, pressed && { opacity: 0.92 }]}
-        >
-          <View style={{ flex: 1 }}>
-            <Text style={styles.modeTitle}>{mode.title}</Text>
-            <Text style={styles.modeSub}>{mode.subtitle}</Text>
-          </View>
-
-          <View style={styles.modeRight}>
-            <Text style={styles.modeMeta}>
-              {mode.inhale}-{mode.hold}-{mode.exhale}
-              {mode.rest > 0 ? `-${mode.rest}` : ""}
-            </Text>
-            <MaterialCommunityIcons name="chevron-down" size={22} color={colors.primary} />
-          </View>
-        </Pressable>
-
-        <View style={styles.visualWrap}>
-          <Animated.View style={[styles.glow, { opacity: glow, transform: [{ scale }] }]} />
-          <Animated.View style={[styles.circle, { transform: [{ scale }] }]}>
-            <Text style={styles.circleText}>{bigText}</Text>
-          </Animated.View>
-        </View>
-
-        <Text style={styles.phaseLabel}>{phaseLabel}</Text>
-
-        <View style={styles.controls}>
-          <Pressable
-            onPress={onPressStartPause}
-            style={({ pressed }) => [styles.primaryBtn, pressed && { opacity: 0.9 }]}
-          >
-            <MaterialCommunityIcons
-              name={
-                phase === "inhale" || phase === "hold" || phase === "exhale" || phase === "rest"
-                  ? "pause"
-                  : "play"
-              }
-              size={18}
-              color="#fff"
-            />
-            <Text style={styles.primaryText}>
-              {phase === "inhale" || phase === "hold" || phase === "exhale" || phase === "rest"
-                ? "Pausar"
-                : "Comenzar"}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            onPress={onReset}
-            style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.9 }]}
-          >
-            <MaterialCommunityIcons name="restart" size={18} color={colors.text} />
-            <Text style={styles.secondaryText}>Reiniciar</Text>
-          </Pressable>
-        </View>
-
-        <Text style={styles.counter}>Respiraciones realizadas: {breathsDone}</Text>
-
-        <Text style={styles.hint}>
-          Consejo: si estás tenso, prueba un modo con exhalación más larga (por ejemplo “Dormir” 4–0–8).
-        </Text>
-      </View>
-
-      <Modal
-        visible={pickerOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setPickerOpen(false)}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 120 }}
       >
-        <Pressable style={styles.modalBackdrop} onPress={() => setPickerOpen(false)}>
-          <Pressable style={styles.modalCard} onPress={() => {}}>
-            <Text style={styles.modalTitle}>Elige un modo</Text>
+        <View style={screenStyles.header}>
+          <Text style={screenStyles.title}>Ejercicio de Respiración</Text>
+          <Text style={screenStyles.subtitle}>
+            Sigue la guía visual para practicar la respiración consciente. Elige el modo que más te encaje hoy.
+          </Text>
+        </View>
 
-            <FlatList
-              data={MODES}
-              keyExtractor={(m) => m.id}
-              contentContainerStyle={{ gap: 10 }}
-              renderItem={({ item }) => {
-                const active = item.id === modeId;
-                return (
-                  <Pressable
-                    onPress={() => {
-                      onReset();
-                      setModeId(item.id);
-                      setPickerOpen(false);
-                    }}
-                    style={({ pressed }) => [
-                      styles.modalItem,
-                      active && styles.modalItemActive,
-                      pressed && { opacity: 0.92 },
-                    ]}
-                  >
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.modalItemTitle, active && { color: colors.primary }]}>
-                        {item.title}
-                      </Text>
-                      <Text style={styles.modalItemSub}>{item.subtitle}</Text>
-                    </View>
+        <View style={styles.card}>
+          {/* Selector de modo */}
+          <Pressable
+            onPress={() => setPickerOpen(true)}
+            style={({ pressed }) => [styles.modeBtn, pressed && { opacity: 0.92 }]}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={styles.modeTitle}>{mode.title}</Text>
+              <Text style={styles.modeSub}>{mode.subtitle}</Text>
+            </View>
 
-                    <Text style={styles.modalItemMeta}>
-                      {item.inhale}-{item.hold}-{item.exhale}
-                      {item.rest > 0 ? `-${item.rest}` : ""}
-                    </Text>
-                  </Pressable>
-                );
-              }}
-            />
+            <View style={styles.modeRight}>
+              <Text style={styles.modeMeta}>
+                {mode.inhale}-{mode.hold}-{mode.exhale}
+                {mode.rest > 0 ? `-${mode.rest}` : ""}
+              </Text>
+              <MaterialCommunityIcons name="chevron-down" size={22} color={colors.primary} />
+            </View>
           </Pressable>
-        </Pressable>
-      </Modal>
+
+          {/* 🔈 Sonido ambiente */}
+          <View style={styles.toggleRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.toggleTitle}>Sonido ambiente</Text>
+              <Text style={styles.toggleSub}>
+                Sugerido:{" "}
+                {AMBIENT_BY_MODE[mode.id] === "lluvia"
+                  ? "Lluvia"
+                  : AMBIENT_BY_MODE[mode.id] === "olas"
+                  ? "Olas"
+                  : "Bosque"}
+              </Text>
+            </View>
+            <Switch value={ambientOn} onValueChange={(v) => void onToggleAmbient(v)} />
+          </View>
+
+          {/* ⏱️ Tiempo total */}
+          <View style={styles.presetRow}>
+            <Text style={styles.presetLabel}>Tiempo total</Text>
+
+            <View style={styles.presetPills}>
+              <Pressable
+                onPress={() => setTotalPreset("5")}
+                style={({ pressed }) => [
+                  styles.pill,
+                  totalPreset === "5" && styles.pillActive,
+                  pressed && { opacity: 0.92 },
+                ]}
+              >
+                <Text style={[styles.pillText, totalPreset === "5" && styles.pillTextActive]}>
+                  5 min
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => setTotalPreset("10")}
+                style={({ pressed }) => [
+                  styles.pill,
+                  totalPreset === "10" && styles.pillActive,
+                  pressed && { opacity: 0.92 },
+                ]}
+              >
+                <Text style={[styles.pillText, totalPreset === "10" && styles.pillTextActive]}>
+                  10 min
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => setTotalPreset("libre")}
+                style={({ pressed }) => [
+                  styles.pill,
+                  totalPreset === "libre" && styles.pillActive,
+                  pressed && { opacity: 0.92 },
+                ]}
+              >
+                <Text style={[styles.pillText, totalPreset === "libre" && styles.pillTextActive]}>
+                  Libre
+                </Text>
+              </Pressable>
+            </View>
+
+            <Text style={styles.smallTime}>
+              {totalLimitSec == null
+                ? `Tiempo: ${mmssFromSeconds(totalElapsed)}`
+                : `Quedan: ${mmssFromSeconds(remainingSec ?? 0)}`}
+            </Text>
+          </View>
+
+          {/* Visual */}
+          <View style={styles.visualWrap}>
+            <Animated.View style={[styles.glow, { opacity: glow, transform: [{ scale }] }]} />
+            <Animated.View style={[styles.circle, { transform: [{ scale }] }]}>
+              <Text style={styles.circleText}>{bigText}</Text>
+            </Animated.View>
+          </View>
+
+          <Text style={styles.phaseLabel}>{phaseLabel}</Text>
+
+          <View style={styles.controls}>
+            <Pressable
+              onPress={() => void onPressStartPause()}
+              style={({ pressed }) => [styles.primaryBtn, pressed && { opacity: 0.9 }]}
+            >
+              <MaterialCommunityIcons
+                name={
+                  phase === "inhale" || phase === "hold" || phase === "exhale" || phase === "rest"
+                    ? "pause"
+                    : "play"
+                }
+                size={18}
+                color="#fff"
+              />
+              <Text style={styles.primaryText}>
+                {phase === "inhale" || phase === "hold" || phase === "exhale" || phase === "rest"
+                  ? "Pausar"
+                  : "Comenzar"}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => void onReset()}
+              style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.9 }]}
+            >
+              <MaterialCommunityIcons name="restart" size={18} color={colors.text} />
+              <Text style={styles.secondaryText}>Reiniciar</Text>
+            </Pressable>
+          </View>
+
+          <Text style={styles.counter}>
+            Respiraciones: {breathsDone} · Ciclo: {cycleSeconds}s
+          </Text>
+
+          <Text style={styles.hint}>
+            Consejo: si estás tenso, prueba exhalar más largo (por ejemplo 4–0–8).
+          </Text>
+        </View>
+
+        {/* Modal modos */}
+        <Modal
+          visible={pickerOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setPickerOpen(false)}
+        >
+          <Pressable style={styles.modalBackdrop} onPress={() => setPickerOpen(false)}>
+            <Pressable style={styles.modalCard} onPress={() => {}}>
+              <Text style={styles.modalTitle}>Elige un modo</Text>
+
+              <FlatList
+                data={MODES}
+                keyExtractor={(m) => m.id}
+                contentContainerStyle={{ gap: 10 }}
+                renderItem={({ item }) => {
+                  const active = item.id === modeId;
+                  return (
+                    <Pressable
+                      onPress={() => {
+                        void onReset();
+                        setModeId(item.id);
+                        setPickerOpen(false);
+                      }}
+                      style={({ pressed }) => [
+                        styles.modalItem,
+                        active && styles.modalItemActive,
+                        pressed && { opacity: 0.92 },
+                      ]}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.modalItemTitle, active && { color: colors.primary }]}>
+                          {item.title}
+                        </Text>
+                        <Text style={styles.modalItemSub}>{item.subtitle}</Text>
+                      </View>
+
+                      <Text style={styles.modalItemMeta}>
+                        {item.inhale}-{item.hold}-{item.exhale}
+                        {item.rest > 0 ? `-${item.rest}` : ""}
+                      </Text>
+                    </Pressable>
+                  );
+                }}
+              />
+            </Pressable>
+          </Pressable>
+        </Modal>
+      </ScrollView>
     </View>
   );
 }
@@ -485,19 +723,65 @@ const styles = StyleSheet.create({
   modeRight: { alignItems: "flex-end" },
   modeMeta: { fontSize: 12, fontWeight: "900", color: "rgba(74,74,74,0.65)", marginBottom: 2 },
 
-  visualWrap: { marginTop: 16, alignItems: "center", justifyContent: "center", height: 240 },
+  toggleRow: {
+    marginTop: 10,
+    backgroundColor: "rgba(255,255,255,0.92)",
+    borderRadius: 16,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "rgba(198, 183, 226, 0.35)",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  toggleTitle: { fontSize: 13, fontWeight: "900", color: colors.text },
+  toggleSub: { marginTop: 2, fontSize: 12, fontWeight: "700", color: "rgba(74,74,74,0.65)" },
 
+  presetRow: {
+    marginTop: 10,
+    backgroundColor: "rgba(255,255,255,0.92)",
+    borderRadius: 16,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "rgba(198, 183, 226, 0.35)",
+  },
+  presetLabel: { fontSize: 13, fontWeight: "900", color: colors.text, marginBottom: 10 },
+  presetPills: { flexDirection: "row", gap: 10 },
+  pill: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 999,
+    backgroundColor: "rgba(198, 183, 226, 0.16)",
+    borderWidth: 1,
+    borderColor: "rgba(198, 183, 226, 0.28)",
+    alignItems: "center",
+  },
+  pillActive: {
+    backgroundColor: "rgba(198, 183, 226, 0.30)",
+    borderColor: colors.primary,
+  },
+  pillText: { fontSize: 12, fontWeight: "900", color: "rgba(74,74,74,0.70)" },
+  pillTextActive: { color: colors.primary },
+
+  smallTime: {
+    marginTop: 10,
+    textAlign: "center",
+    fontSize: 12,
+    fontWeight: "800",
+    color: "rgba(74,74,74,0.70)",
+  },
+
+  visualWrap: { marginTop: 12, alignItems: "center", justifyContent: "center", height: 200 },
   glow: {
     position: "absolute",
-    width: 220,
-    height: 220,
+    width: 190,
+    height: 190,
     borderRadius: 999,
     backgroundColor: "rgba(198, 183, 226, 0.35)",
   },
-
   circle: {
-    width: 200,
-    height: 200,
+    width: 170,
+    height: 170,
     borderRadius: 999,
     backgroundColor: "rgba(198, 183, 226, 0.25)",
     borderWidth: 2,
@@ -505,9 +789,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  circleText: { fontSize: 20, fontWeight: "900", color: colors.primary },
+  circleText: { fontSize: 18, fontWeight: "900", color: colors.primary },
 
-  phaseLabel: { textAlign: "center", marginTop: 6, fontSize: 13, fontWeight: "800", color: "rgba(74,74,74,0.75)" },
+  phaseLabel: {
+    textAlign: "center",
+    marginTop: 6,
+    fontSize: 13,
+    fontWeight: "800",
+    color: "rgba(74,74,74,0.75)",
+  },
 
   controls: { flexDirection: "row", gap: 10, marginTop: 14 },
   primaryBtn: {
@@ -521,7 +811,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   primaryText: { color: "#fff", fontWeight: "900", fontSize: 14 },
-
   secondaryBtn: {
     flex: 1,
     backgroundColor: "rgba(255,255,255,0.92)",
@@ -536,11 +825,34 @@ const styles = StyleSheet.create({
   },
   secondaryText: { color: colors.text, fontWeight: "900", fontSize: 14 },
 
-  counter: { marginTop: 14, textAlign: "center", fontSize: 12, fontWeight: "800", color: "rgba(74,74,74,0.7)" },
-  hint: { marginTop: 10, textAlign: "center", fontSize: 12, fontWeight: "700", color: "rgba(74,74,74,0.62)" },
+  counter: {
+    marginTop: 12,
+    textAlign: "center",
+    fontSize: 12,
+    fontWeight: "800",
+    color: "rgba(74,74,74,0.7)",
+  },
+  hint: {
+    marginTop: 10,
+    textAlign: "center",
+    fontSize: 12,
+    fontWeight: "700",
+    color: "rgba(74,74,74,0.62)",
+  },
 
-  modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.25)", padding: 18, justifyContent: "center" },
-  modalCard: { backgroundColor: "#fff", borderRadius: 18, padding: 14, borderWidth: 1, borderColor: "rgba(198, 183, 226, 0.35)" },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.25)",
+    padding: 18,
+    justifyContent: "center",
+  },
+  modalCard: {
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "rgba(198, 183, 226, 0.35)",
+  },
   modalTitle: { fontSize: 15, fontWeight: "900", color: colors.text, marginBottom: 10 },
   modalItem: {
     padding: 12,

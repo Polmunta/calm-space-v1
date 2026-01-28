@@ -1,9 +1,11 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, Pressable, StyleSheet, FlatList } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { colors } from "../../shared/theme/colors";
+
+import { getSOSFavorites, toggleSOSFavorite, getSOSUsage } from "./sos.storage";
 
 type SOSItem = {
   id: string;
@@ -13,7 +15,7 @@ type SOSItem = {
   detailTitle: string;
   steps: string[];
   suggest?: {
-    breathingModeId?: "calma" | "ansiedad" | "dormir" | "foco" | "cuerpo";
+    breathingModeId?: "calma" | "antiestres" | "cuadrada" | "suave" | "sueno";
     soundId?: "lluvia" | "olas" | "bosque" | "rio" | "tormenta";
   };
 };
@@ -31,7 +33,7 @@ const SOS_ITEMS: SOSItem[] = [
       "3) Respira 4-2-6 durante 6 ciclos.",
       "4) Nombra 5 cosas que ves.",
     ],
-    suggest: { breathingModeId: "ansiedad", soundId: "lluvia" },
+    suggest: { breathingModeId: "antiestres", soundId: "lluvia" },
   },
   {
     id: "overwhelmed",
@@ -55,9 +57,9 @@ const SOS_ITEMS: SOSItem[] = [
     steps: [
       "1) Baja la luz de la pantalla.",
       "2) Exhala lento 8 segundos x 6 veces.",
-      "3) Relaja la lengua (al paladar suave) y la frente.",
+      "3) Relaja lengua y frente.",
     ],
-    suggest: { breathingModeId: "dormir", soundId: "olas" },
+    suggest: { breathingModeId: "sueno", soundId: "olas" },
   },
   {
     id: "sad",
@@ -66,9 +68,9 @@ const SOS_ITEMS: SOSItem[] = [
     icon: "weather-cloudy",
     detailTitle: "Acompañar la tristeza (60s)",
     steps: [
-      "1) Pon una mano en el pecho y nota el contacto.",
+      "1) Mano en el pecho y nota el contacto.",
       "2) Dite: ‘Esto es difícil, y no estoy sola en sentirlo’.",
-      "3) Escribe una frase: ‘Hoy necesito…’.",
+      "3) Escribe: ‘Hoy necesito…’.",
     ],
     suggest: { breathingModeId: "calma", soundId: "rio" },
   },
@@ -83,7 +85,7 @@ const SOS_ITEMS: SOSItem[] = [
       "2) Elige 1 micro-tarea (5 min).",
       "3) Empieza sin perfección. Solo empezar.",
     ],
-    suggest: { breathingModeId: "foco", soundId: "bosque" },
+    suggest: { breathingModeId: "cuadrada", soundId: "bosque" },
   },
   {
     id: "body",
@@ -96,23 +98,43 @@ const SOS_ITEMS: SOSItem[] = [
       "2) Aprieta puños 3s y suelta 6s (x3).",
       "3) Gira cuello suave a ambos lados.",
     ],
-    suggest: { breathingModeId: "cuerpo", soundId: "lluvia" },
+    suggest: { breathingModeId: "suave", soundId: "lluvia" },
   },
 ];
 
 export default function SOSScreen({ navigation }: any) {
-  // ✅ orden “humano”: primero ansiedad y dormir (lo más típico)
-  const data = useMemo(() => {
-    const priority = ["anxiety", "sleep"];
-    return [...SOS_ITEMS].sort((a, b) => {
-      const pa = priority.indexOf(a.id);
-      const pb = priority.indexOf(b.id);
-      if (pa === -1 && pb === -1) return 0;
-      if (pa === -1) return 1;
-      if (pb === -1) return -1;
-      return pa - pb;
-    });
+  const [favs, setFavs] = useState<string[]>([]);
+  const [usage, setUsage] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    (async () => {
+      setFavs(await getSOSFavorites());
+      setUsage(await getSOSUsage());
+    })();
   }, []);
+
+  const favSet = useMemo(() => new Set(favs), [favs]);
+
+  const data = useMemo(() => {
+    const base = [...SOS_ITEMS];
+    base.sort((a, b) => {
+      const aFav = favSet.has(a.id) ? 1 : 0;
+      const bFav = favSet.has(b.id) ? 1 : 0;
+      if (bFav !== aFav) return bFav - aFav;
+
+      const aUse = usage[a.id] ?? 0;
+      const bUse = usage[b.id] ?? 0;
+      if (bUse !== aUse) return bUse - aUse;
+
+      return 0; // mantiene orden original si empatan
+    });
+    return base;
+  }, [favSet, usage]);
+
+  const onToggleFav = async (id: string) => {
+    const next = await toggleSOSFavorite(id);
+    setFavs(next);
+  };
 
   return (
     <View style={screenStyles.container}>
@@ -125,42 +147,41 @@ export default function SOSScreen({ navigation }: any) {
         data={data}
         keyExtractor={(i) => i.id}
         contentContainerStyle={{ gap: 12, paddingBottom: 12 }}
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() => navigation.navigate("SOSDetail", { item })}
-            style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
-          >
-            <View style={styles.row}>
-              <View style={styles.iconWrap}>
-                <MaterialCommunityIcons name={item.icon} size={22} color={colors.primary} />
+        renderItem={({ item }) => {
+          const isFav = favSet.has(item.id);
+          const times = usage[item.id] ?? 0;
+
+          return (
+            <Pressable
+              onPress={() => navigation.navigate("SOSDetail", { item })}
+              style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+            >
+              <View style={styles.row}>
+                <View style={styles.iconWrap}>
+                  <MaterialCommunityIcons name={item.icon} size={22} color={colors.primary} />
+                </View>
+
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.titleText}>{item.title}</Text>
+                  <Text style={styles.subText}>{item.subtitle}</Text>
+
+                  {/* ✅ micro-info sin recargar */}
+                  {times > 0 ? (
+                    <Text style={styles.metaText}>Usado {times} {times === 1 ? "vez" : "veces"}</Text>
+                  ) : null}
+                </View>
+
+                <Pressable onPress={() => onToggleFav(item.id)} hitSlop={10}>
+                  <MaterialCommunityIcons
+                    name={isFav ? "star" : "star-outline"}
+                    size={22}
+                    color={isFav ? colors.primary : "rgba(74,74,74,0.55)"}
+                  />
+                </Pressable>
               </View>
-
-              <View style={{ flex: 1 }}>
-                <Text style={styles.titleText}>{item.title}</Text>
-                <Text style={styles.subText}>{item.subtitle}</Text>
-
-                {(item.suggest?.breathingModeId || item.suggest?.soundId) ? (
-                  <View style={styles.badges}>
-                    {item.suggest?.breathingModeId ? (
-                      <View style={styles.badge}>
-                        <MaterialCommunityIcons name="weather-windy" size={14} color={colors.primary} />
-                        <Text style={styles.badgeText}>Respiración</Text>
-                      </View>
-                    ) : null}
-                    {item.suggest?.soundId ? (
-                      <View style={styles.badge}>
-                        <MaterialCommunityIcons name="music-note-outline" size={14} color={colors.primary} />
-                        <Text style={styles.badgeText}>Sonidos</Text>
-                      </View>
-                    ) : null}
-                  </View>
-                ) : null}
-              </View>
-
-              <MaterialCommunityIcons name="chevron-right" size={22} color="rgba(74,74,74,0.45)" />
-            </View>
-          </Pressable>
-        )}
+            </Pressable>
+          );
+        }}
       />
     </View>
   );
@@ -185,19 +206,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   titleText: { fontSize: 16, fontWeight: "900", color: colors.text },
-  subText: { marginTop: 4, fontSize: 13, color: "rgba(74, 74, 74, 0.7)", fontWeight: "700" },
-
-  badges: { flexDirection: "row", gap: 8, marginTop: 10, flexWrap: "wrap" },
-  badge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.85)",
-    borderWidth: 1,
-    borderColor: "rgba(198, 183, 226, 0.35)",
-  },
-  badgeText: { fontSize: 12, fontWeight: "900", color: "rgba(74,74,74,0.75)" },
+  subText: { marginTop: 4, fontSize: 13, color: "rgba(74, 74, 74, 0.7)" },
+  metaText: { marginTop: 6, fontSize: 12, fontWeight: "800", color: "rgba(74,74,74,0.55)" },
 });

@@ -29,7 +29,7 @@ const SOUNDS: SoundItem[] = [
   { id: "tormenta", title: "Tormenta", file: require("../../../assets/audio/tormenta.wav"), icon: "weather-lightning-rainy" },
 ];
 
-type StopReason = "blur" | "unmount" | "manual" | "autoplay";
+type StopReason = "blur" | "unmount" | "manual" | "switch" | "autoplay";
 
 export default function SoundsScreen({ route, navigation }: any) {
   const soundRef = useRef<Audio.Sound | null>(null);
@@ -45,6 +45,7 @@ export default function SoundsScreen({ route, navigation }: any) {
     setStopping(true);
     try {
       if (soundRef.current) {
+        try { await soundRef.current.stopAsync(); } catch {}
         try { await soundRef.current.pauseAsync(); } catch {}
         try { await soundRef.current.unloadAsync(); } catch {}
         soundRef.current = null;
@@ -80,6 +81,7 @@ export default function SoundsScreen({ route, navigation }: any) {
     };
   }, [stopAndUnloadForced]);
 
+  // ✅ al salir de la pantalla/tab SIEMPRE paramos (forzado)
   useFocusEffect(
     useCallback(() => {
       return () => {
@@ -88,15 +90,10 @@ export default function SoundsScreen({ route, navigation }: any) {
     }, [stopAndUnloadForced])
   );
 
-  const stop = async () => {
-    await stopAndUnload("manual");
-  };
-
-  const play = useCallback(async (item: SoundItem, _reason: StopReason = "manual") => {
+  const play = useCallback(async (item: SoundItem, reason: StopReason = "manual") => {
     if (busyRef.current) return;
     busyRef.current = true;
 
-    // Toggle
     if (playingId === item.id) {
       busyRef.current = false;
       await stopAndUnload("manual");
@@ -106,8 +103,8 @@ export default function SoundsScreen({ route, navigation }: any) {
     setLoadingId(item.id);
 
     try {
-      // Parar anterior
       if (soundRef.current) {
+        try { await soundRef.current.stopAsync(); } catch {}
         try { await soundRef.current.pauseAsync(); } catch {}
         try { await soundRef.current.unloadAsync(); } catch {}
         soundRef.current = null;
@@ -140,17 +137,17 @@ export default function SoundsScreen({ route, navigation }: any) {
       if (!item) return;
 
       const t = setTimeout(() => {
-        // si ya suena otro, cambiamos
         void play(item, "autoplay");
-
-        try {
-          navigation.setParams({ autoPlayId: undefined });
-        } catch {}
+        try { navigation.setParams({ autoPlayId: undefined }); } catch {}
       }, 150);
 
       return () => clearTimeout(t);
     }, [route?.params?.autoPlayId, navigation, play])
   );
+
+  const stop = async () => {
+    await stopAndUnload("manual");
+  };
 
   const renderItem = ({ item }: { item: SoundItem }) => {
     const isPlaying = playingId === item.id;
