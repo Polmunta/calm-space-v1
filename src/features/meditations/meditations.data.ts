@@ -1,8 +1,8 @@
 export type MeditationStep = {
   title: string;
-  hint?: string; // ✅ nuevo: 1-2 líneas
   fromSec: number;
   toSec: number;
+  hint?: string; // ✅ NUEVO: texto corto bajo el paso activo
 };
 
 export type MeditationSession = {
@@ -27,37 +27,36 @@ export const SESSIONS: MeditationSession[] = [
     steps: [
       {
         title: "Preparación",
-        hint: "Encuentra una postura cómoda. Suelta mandíbula y hombros.",
         fromSec: 0,
-        toSec: 295, // siguiente voz empieza en 05:00, entramos 5s antes
+        toSec: 150,
+        hint: "Acomódate. Suelta hombros y mandíbula. No hace falta hacerlo perfecto.",
       },
       {
         title: "Respiración",
-        hint: "Inhala suave por la nariz. Exhala más largo y lento.",
-        fromSec: 295, // 04:55
-        toSec: 600,   // 09:55
+        fromSec: 150,
+        toSec: 420,
+        hint: "Inhala suave por la nariz y exhala un poco más largo. Vuelve a la respiración cuando te distraigas.",
       },
       {
         title: "Cuerpo",
-        hint: "Recorre el cuerpo con atención. Relaja zonas tensas sin forzar.",
-        fromSec: 600, // 09:55
-        toSec: 965,   // 15:55
+        fromSec: 420,
+        toSec: 780,
+        hint: "Recorre el cuerpo por zonas. Afloja solo un 5% cada vez.",
       },
       {
         title: "Pensamientos",
-        hint: "Observa los pensamientos pasar. Vuelve a la respiración cuando te distraigas.",
-        fromSec: 965, // 15:55
-        toSec: 1080,  // 17:55
+        fromSec: 780,
+        toSec: 1080,
+        hint: "Etiqueta: “pensando” y deja pasar. Vuelve al aire entrando y saliendo.",
       },
       {
         title: "Cierre suave",
-        hint: "Agradece el momento. Vuelve despacio: respiración, cuerpo y entorno.",
-        fromSec: 1080, // 17:55
-        toSec: 1264,   // 21:04
+        fromSec: 1080,
+        toSec: 1264,
+        hint: "Respira profundo 1 vez. Elige una intención pequeña para el resto del día.",
       },
     ],
   },
-
   {
     id: "relajacion",
     title: "Relajación guiada",
@@ -69,33 +68,33 @@ export const SESSIONS: MeditationSession[] = [
     steps: [
       {
         title: "Acomodarte",
-        hint: "Ajusta tu postura y apoya bien el cuerpo. Exhala y afloja.",
         fromSec: 0,
-        toSec: 295, // 04:55
+        toSec: 180,
+        hint: "Busca una postura cómoda. Si necesitas moverte, hazlo sin prisa.",
       },
       {
         title: "Respiración lenta",
-        hint: "Respira más lento de lo normal. Exhala largo para soltar tensión.",
-        fromSec: 295, // 04:55
-        toSec: 600,   // 09:55
+        fromSec: 180,
+        toSec: 480,
+        hint: "Exhala largo para soltar tensión. No fuerces la inhalación.",
       },
       {
         title: "Relajar cuerpo",
-        hint: "Relaja de arriba abajo: frente, cuello, hombros, pecho y abdomen.",
-        fromSec: 600, // 09:55
-        toSec: 955,   // 15:55
+        fromSec: 480,
+        toSec: 900,
+        hint: "Escanea: cara → hombros → pecho. Suelta donde notes rigidez.",
       },
       {
         title: "Soltar tensión",
-        hint: "Suelta conscientemente: hombros, manos, mandíbula. Sin prisa.",
-        fromSec: 955, // 15:55
-        toSec: 1075,  // 17:55
+        fromSec: 900,
+        toSec: 1200,
+        hint: "Imagina que el peso cae hacia el suelo. Afloja cuello y espalda.",
       },
       {
         title: "Final / descanso",
-        hint: "Quédate unos instantes quieto. Respira natural y deja que el cuerpo descanse.",
-        fromSec: 1075, // 17:55
-        toSec: 1324,   // 22:04
+        fromSec: 1200,
+        toSec: 1324,
+        hint: "Quédate respirando suave. Si aparece sueño, déjalo venir.",
       },
     ],
   },
