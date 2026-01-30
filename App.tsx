@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Pressable, Platform } from "react-native";
-import { NavigationContainer, getFocusedRouteNameFromRoute } from "@react-navigation/native";
+import { Platform } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -37,7 +37,8 @@ const stackScreenOptions = {
 function HomeStack() {
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
-      <Stack.Screen name="Home" component={HomeScreen} options={{ title: "" }} />
+      {/* ✅ ya NO necesitamos header aquí; lo pintamos dentro de Home */}
+      <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }
@@ -152,39 +153,33 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <RootStack.Navigator screenOptions={stackScreenOptions}>
-        <RootStack.Screen
-          name="Tabs"
-          component={Tabs}
-          options={({ navigation, route }) => {
-            const focused = getFocusedRouteNameFromRoute(route) ?? "TabHome";
-            const showHeaderOnlyOnHome = focused === "TabHome";
+      {/* ✅ HEADER OFF SIEMPRE: se van las líneas/banners */}
+      <RootStack.Navigator screenOptions={{ headerShown: false }}>
+        <RootStack.Screen name="Tabs" component={Tabs} />
 
-            return {
-              title: "",
-              headerShown: showHeaderOnlyOnHome, // ✅ SOLO HOME
-              headerLeft: () => (
-                <Pressable
-                  onPress={() => navigation.navigate("Profile")}
-                  style={{ paddingHorizontal: 12, paddingVertical: 8 }}
-                >
-                  <MaterialCommunityIcons name="account-circle-outline" size={26} color={colors.primary} />
-                </Pressable>
-              ),
-              headerRight: () => (
-                <Pressable
-                  onPress={() => navigation.navigate("Language")}
-                  style={{ paddingHorizontal: 12, paddingVertical: 8 }}
-                >
-                  <MaterialCommunityIcons name="translate" size={24} color={colors.primary} />
-                </Pressable>
-              ),
-            };
+        {/* Pantallas fuera de Tabs */}
+        <RootStack.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{
+            headerShown: true,
+            title: "Perfil",
+            headerStyle: { backgroundColor: "#FAF9FC" },
+            headerTintColor: colors.primary,
+            headerTitleStyle: { fontWeight: "800", color: colors.primary },
           }}
         />
-
-        <RootStack.Screen name="Profile" component={ProfileScreen} options={{ title: "Perfil" }} />
-        <RootStack.Screen name="Language" component={LanguageScreen} options={{ title: "Idioma" }} />
+        <RootStack.Screen
+          name="Language"
+          component={LanguageScreen}
+          options={{
+            headerShown: true,
+            title: "Idioma",
+            headerStyle: { backgroundColor: "#FAF9FC" },
+            headerTintColor: colors.primary,
+            headerTitleStyle: { fontWeight: "800", color: colors.primary },
+          }}
+        />
       </RootStack.Navigator>
     </NavigationContainer>
   );
