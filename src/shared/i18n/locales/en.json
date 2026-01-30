@@ -1,0 +1,11 @@
+{
+  "tabs": {
+    "home": "Home",
+    "sos": "SOS",
+    "breathing": "Breathe",
+    "mindfulness": "Focus",
+    "sounds": "Sounds",
+    "meditations": "Meditate",
+    "journal": "Journal"
+  }
+}

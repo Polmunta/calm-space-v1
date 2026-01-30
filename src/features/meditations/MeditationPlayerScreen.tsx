@@ -7,8 +7,10 @@ import { useFocusEffect } from "@react-navigation/native";
 
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { colors } from "../../shared/theme/colors";
-import { SESSIONS, type MeditationSession } from "./meditations.data";
+import { SESSIONS, type MeditationSession, getSessionAudio } from "./meditations.data";
+
 import { setLastSession } from "./meditations.storage";
+
 
 function mmss(totalSeconds: number) {
   const safe = Math.max(0, Math.floor(totalSeconds));
@@ -98,7 +100,8 @@ export default function MeditationPlayerScreen({ route }: any) {
     if (!session) return;
     if (soundRef.current) return;
 
-    const { sound } = await Audio.Sound.createAsync(session.audio, {
+    const { sound } = await Audio.Sound.createAsync(getSessionAudio(session), {
+
       shouldPlay: false,
       isLooping: false,
       volume,

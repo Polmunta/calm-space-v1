@@ -1,12 +1,15 @@
-import React from "react";
-import { Platform } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
+import { Pressable, Platform } from "react-native";
+import { NavigationContainer, getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
+import i18n, { initAppLanguage } from "./src/shared/i18n/i18n";
 import { colors } from "./src/shared/theme/colors";
 
+// screens
 import HomeScreen from "./src/HomeScreen";
 import BreathingScreen from "./src/features/breathing/BreathingScreen";
 import MindfulnessScreen from "./src/features/mindfulness/MindfulnessScreen";
@@ -17,34 +20,28 @@ import SOSDetailScreen from "./src/features/sos/SOSDetailScreen";
 import MeditationsScreen from "./src/features/meditations/MeditationsScreen";
 import MeditationPlayerScreen from "./src/features/meditations/MeditationPlayerScreen";
 
+// root (fuera de tabs)
+import ProfileScreen from "./src/features/profile/ProfileScreen";
+import LanguageScreen from "./src/features/settings/LanguageScreen";
+
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+const RootStack = createNativeStackNavigator();
 
-/** ✅ Header común: lavanda + back */
 const stackScreenOptions = {
   headerStyle: { backgroundColor: "#FAF9FC" },
-  headerTitleStyle: {
-    fontWeight: "800" as const,
-    color: colors.primary,
-  },
+  headerTitleStyle: { fontWeight: "800" as const, color: colors.primary },
   headerTintColor: colors.primary,
-  headerBackTitleVisible: false,
 };
 
-/** HOME stack */
 function HomeStack() {
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
-      <Stack.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{ title: "" }} // sin título arriba en Home
-      />
+      <Stack.Screen name="Home" component={HomeScreen} options={{ title: "" }} />
     </Stack.Navigator>
   );
 }
 
-/** SOS stack */
 function SOSStack() {
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
@@ -54,7 +51,6 @@ function SOSStack() {
   );
 }
 
-/** Breathing stack */
 function BreathingStack() {
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
@@ -63,7 +59,6 @@ function BreathingStack() {
   );
 }
 
-/** Mindfulness stack */
 function MindfulnessStack() {
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
@@ -72,7 +67,6 @@ function MindfulnessStack() {
   );
 }
 
-/** Sounds stack */
 function SoundsStack() {
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
@@ -81,21 +75,15 @@ function SoundsStack() {
   );
 }
 
-/** Meditations stack */
 function MeditationsStack() {
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
       <Stack.Screen name="Meditations" component={MeditationsScreen} options={{ title: "Meditaciones" }} />
-      <Stack.Screen
-        name="MeditationPlayer"
-        component={MeditationPlayerScreen}
-        options={{ title: "Meditaciones" }}
-      />
+      <Stack.Screen name="MeditationPlayer" component={MeditationPlayerScreen} options={{ title: "Meditaciones" }} />
     </Stack.Navigator>
   );
 }
 
-/** Journal stack */
 function JournalStack() {
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
@@ -104,48 +92,100 @@ function JournalStack() {
   );
 }
 
+function Tabs() {
+  const { t } = useTranslation();
+
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: "rgba(74,74,74,0.55)",
+        tabBarStyle: {
+          backgroundColor: "#fff",
+          borderTopColor: "rgba(198, 183, 226, 0.35)",
+          borderTopWidth: 1,
+          height: 74,
+          paddingTop: 10,
+          paddingBottom: Platform.OS === "android" ? 18 : 24,
+        },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
+        tabBarIcon: ({ color, size }) => {
+          const s = Math.max(22, size);
+          let icon: any = "home-outline";
+          if (route.name === "TabHome") icon = "home-outline";
+          if (route.name === "TabSOS") icon = "lifebuoy";
+          if (route.name === "TabBreathing") icon = "weather-windy";
+          if (route.name === "TabMindfulness") icon = "target";
+          if (route.name === "TabSounds") icon = "music-note-outline";
+          if (route.name === "TabMeditations") icon = "meditation";
+          if (route.name === "TabJournal") icon = "notebook-outline";
+          return <MaterialCommunityIcons name={icon} size={s} color={color} />;
+        },
+      })}
+    >
+      <Tab.Screen name="TabHome" component={HomeStack} options={{ title: t("tabs.home") }} />
+      <Tab.Screen name="TabSOS" component={SOSStack} options={{ title: t("tabs.sos") }} />
+      <Tab.Screen name="TabBreathing" component={BreathingStack} options={{ title: t("tabs.breathing") }} />
+      <Tab.Screen name="TabMindfulness" component={MindfulnessStack} options={{ title: t("tabs.mindfulness") }} />
+      <Tab.Screen name="TabSounds" component={SoundsStack} options={{ title: t("tabs.sounds") }} />
+      <Tab.Screen name="TabMeditations" component={MeditationsStack} options={{ title: t("tabs.meditations") }} />
+      <Tab.Screen name="TabJournal" component={JournalStack} options={{ title: t("tabs.journal") }} />
+    </Tab.Navigator>
+  );
+}
+
 export default function App() {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        await initAppLanguage(); // ✅ carga idioma guardado (o sistema)
+      } finally {
+        setReady(true);
+      }
+    })();
+  }, []);
+
+  if (!ready) return null;
+
   return (
     <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          headerShown: false, // el header lo lleva cada Stack
-          tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: "rgba(74,74,74,0.55)",
-          tabBarStyle: {
-            backgroundColor: "#fff",
-            borderTopColor: "rgba(198, 183, 226, 0.35)",
-            borderTopWidth: 1,
-            height: 74,
-            paddingTop: 10,
-            paddingBottom: Platform.OS === "android" ? 20 : 26, // ✅ sube la barra
-            marginBottom: 2, // 👈 sube la barra (prueba 6–12)
-          },
-          tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
-          tabBarIcon: ({ color, size }) => {
-            const s = Math.max(22, size);
-            let icon: any = "home-outline";
+      <RootStack.Navigator screenOptions={stackScreenOptions}>
+        <RootStack.Screen
+          name="Tabs"
+          component={Tabs}
+          options={({ navigation, route }) => {
+            const focused = getFocusedRouteNameFromRoute(route) ?? "TabHome";
+            const showHeaderOnlyOnHome = focused === "TabHome";
 
-            if (route.name === "TabHome") icon = "home-outline";
-            if (route.name === "TabSOS") icon = "lifebuoy";
-            if (route.name === "TabBreathing") icon = "weather-windy";
-            if (route.name === "TabMindfulness") icon = "target";
-            if (route.name === "TabSounds") icon = "music-note-outline";
-            if (route.name === "TabMeditations") icon = "meditation";
-            if (route.name === "TabJournal") icon = "notebook-outline";
+            return {
+              title: "",
+              headerShown: showHeaderOnlyOnHome, // ✅ SOLO HOME
+              headerLeft: () => (
+                <Pressable
+                  onPress={() => navigation.navigate("Profile")}
+                  style={{ paddingHorizontal: 12, paddingVertical: 8 }}
+                >
+                  <MaterialCommunityIcons name="account-circle-outline" size={26} color={colors.primary} />
+                </Pressable>
+              ),
+              headerRight: () => (
+                <Pressable
+                  onPress={() => navigation.navigate("Language")}
+                  style={{ paddingHorizontal: 12, paddingVertical: 8 }}
+                >
+                  <MaterialCommunityIcons name="translate" size={24} color={colors.primary} />
+                </Pressable>
+              ),
+            };
+          }}
+        />
 
-            return <MaterialCommunityIcons name={icon} size={s} color={color} />;
-          },
-        })}
-      >
-        <Tab.Screen name="TabHome" component={HomeStack} options={{ title: "Inicio" }} />
-        <Tab.Screen name="TabSOS" component={SOSStack} options={{ title: "SOS" }} />
-        <Tab.Screen name="TabBreathing" component={BreathingStack} options={{ title: "Respira" }} />
-        <Tab.Screen name="TabMindfulness" component={MindfulnessStack} options={{ title: "Foco" }} />
-        <Tab.Screen name="TabSounds" component={SoundsStack} options={{ title: "Sonidos" }} />
-        <Tab.Screen name="TabMeditations" component={MeditationsStack} options={{ title: "Medita" }} />
-        <Tab.Screen name="TabJournal" component={JournalStack} options={{ title: "Diario" }} />
-      </Tab.Navigator>
+        <RootStack.Screen name="Profile" component={ProfileScreen} options={{ title: "Perfil" }} />
+        <RootStack.Screen name="Language" component={LanguageScreen} options={{ title: "Idioma" }} />
+      </RootStack.Navigator>
     </NavigationContainer>
   );
 }
