@@ -30,51 +30,11 @@ type Mode = {
 };
 
 const MODES: Mode[] = [
-  {
-    id: "calma",
-    title: "Calma (4–4–6)",
-    subtitle: "Para bajar revoluciones y volver al centro.",
-    inhale: 4,
-    hold: 4,
-    exhale: 6,
-    rest: 0,
-  },
-  {
-    id: "antiestres",
-    title: "Anti-estrés (4–2–6)",
-    subtitle: "Rápida y efectiva cuando estás acelerado.",
-    inhale: 4,
-    hold: 2,
-    exhale: 6,
-    rest: 0,
-  },
-  {
-    id: "cuadrada",
-    title: "Cuadrada (4–4–4–4)",
-    subtitle: "Equilibra, enfoca y estabiliza.",
-    inhale: 4,
-    hold: 4,
-    exhale: 4,
-    rest: 4,
-  },
-  {
-    id: "suave",
-    title: "Suave (3–1–5)",
-    subtitle: "Ideal para empezar si eres principiante.",
-    inhale: 3,
-    hold: 1,
-    exhale: 5,
-    rest: 0,
-  },
-  {
-    id: "sueno",
-    title: "Sueño (4–0–8)",
-    subtitle: "Exhala más largo para soltar tensión y dormir mejor.",
-    inhale: 4,
-    hold: 0,
-    exhale: 8,
-    rest: 0,
-  },
+  { id: "calma", title: "Calma (4–4–6)", subtitle: "Para bajar revoluciones y volver al centro.", inhale: 4, hold: 4, exhale: 6, rest: 0 },
+  { id: "antiestres", title: "Anti-estrés (4–2–6)", subtitle: "Rápida y efectiva cuando estás acelerado.", inhale: 4, hold: 2, exhale: 6, rest: 0 },
+  { id: "cuadrada", title: "Cuadrada (4–4–4–4)", subtitle: "Equilibra, enfoca y estabiliza.", inhale: 4, hold: 4, exhale: 4, rest: 4 },
+  { id: "suave", title: "Suave (3–1–5)", subtitle: "Ideal para empezar si eres principiante.", inhale: 3, hold: 1, exhale: 5, rest: 0 },
+  { id: "sueno", title: "Sueño (4–0–8)", subtitle: "Exhala más largo para soltar tensión y dormir mejor.", inhale: 4, hold: 0, exhale: 8, rest: 0 },
 ];
 
 type Phase = "idle" | "countdown" | "inhale" | "hold" | "exhale" | "rest" | "paused";
@@ -108,7 +68,7 @@ const AMBIENT_FILES: Record<AmbientId, any> = {
 
 type TotalPreset = "libre" | "5" | "10";
 
-export default function BreathingScreen({ route }: any) {
+export default function BreathingScreen({ route, navigation }: any) {
   const initialModeId = (route?.params?.modeId as Mode["id"] | undefined) ?? MODES[0].id;
 
   const [modeId, setModeId] = useState<Mode["id"]>(initialModeId);
@@ -121,15 +81,17 @@ export default function BreathingScreen({ route }: any) {
   const [phaseLeft, setPhaseLeft] = useState(0);
   const [breathsDone, setBreathsDone] = useState(0);
 
-  // ⏱️ tiempo total
+  // ⏱️ tiempo total: preset + override (rutina)
   const [totalPreset, setTotalPreset] = useState<TotalPreset>("libre");
-  const totalLimitSec = totalPreset === "5" ? 5 * 60 : totalPreset === "10" ? 10 * 60 : null;
+  const presetLimitSec = totalPreset === "5" ? 5 * 60 : totalPreset === "10" ? 10 * 60 : null;
+
+  const [totalLimitOverrideSec, setTotalLimitOverrideSec] = useState<number | null>(null);
+
+  const totalLimitSec = totalLimitOverrideSec ?? presetLimitSec;
   const [totalElapsed, setTotalElapsed] = useState(0);
+  const remainingSec = totalLimitSec == null ? null : Math.max(0, totalLimitSec - totalElapsed);
 
-  const remainingSec =
-    totalLimitSec == null ? null : Math.max(0, totalLimitSec - totalElapsed);
-
-  // 🔈 sonido ambiente
+  // 🔈 ambiente
   const [ambientOn, setAmbientOn] = useState(false);
   const ambientSoundRef = useRef<Audio.Sound | null>(null);
   const ambientBusyRef = useRef(false);
@@ -144,15 +106,8 @@ export default function BreathingScreen({ route }: any) {
   const scale = useRef(new Animated.Value(0.55)).current;
   const glow = useRef(new Animated.Value(0.35)).current;
 
-  // ✅ si entras desde SOS con preset, actualiza modo
-  useEffect(() => {
-    const nextId = route?.params?.modeId as Mode["id"] | undefined;
-    if (nextId && nextId !== modeId) {
-      void onReset();
-      setModeId(nextId);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [route?.params?.modeId]);
+  // ✅ evita que el efecto de params se dispare en bucle
+  const lastParamsKeyRef = useRef<string>("");
 
   // ---------- AUDIO MODE ----------
   useEffect(() => {
@@ -168,7 +123,7 @@ export default function BreathingScreen({ route }: any) {
     })();
   }, []);
 
-  const clearAllTimers = () => {
+  const clearAllTimers = useCallback(() => {
     if (tickTimerRef.current) clearInterval(tickTimerRef.current);
     if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
     if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
@@ -178,24 +133,20 @@ export default function BreathingScreen({ route }: any) {
     phaseTimerRef.current = null;
     countdownTimerRef.current = null;
     totalTimerRef.current = null;
-  };
+  }, []);
 
-  const stopAnimations = () => {
+  const stopAnimations = useCallback(() => {
     scale.stopAnimation();
     glow.stopAnimation();
-  };
+  }, [glow, scale]);
 
   const stopAmbient = useCallback(async () => {
     if (ambientBusyRef.current) return;
     ambientBusyRef.current = true;
     try {
       if (ambientSoundRef.current) {
-        try {
-          await ambientSoundRef.current.pauseAsync();
-        } catch {}
-        try {
-          await ambientSoundRef.current.unloadAsync();
-        } catch {}
+        try { await ambientSoundRef.current.pauseAsync(); } catch {}
+        try { await ambientSoundRef.current.unloadAsync(); } catch {}
         ambientSoundRef.current = null;
       }
     } finally {
@@ -210,7 +161,6 @@ export default function BreathingScreen({ route }: any) {
     const file = AMBIENT_FILES[ambientId];
     if (!file) return;
 
-    // re-crea limpio
     await stopAmbient();
 
     try {
@@ -220,16 +170,8 @@ export default function BreathingScreen({ route }: any) {
         volume: 0.35,
       });
       ambientSoundRef.current = sound;
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [ambientOn, mode.id, stopAmbient]);
-
-  // si cambias modo y ambient está ON → cambia el ambiente al sugerido
-  useEffect(() => {
-    if (!ambientOn) return;
-    void startAmbient();
-  }, [modeId, ambientOn, startAmbient]);
 
   const stopEverything = useCallback(async () => {
     runningRef.current = false;
@@ -257,9 +199,9 @@ export default function BreathingScreen({ route }: any) {
     }).start();
 
     await stopAmbient();
-  }, [glow, scale, stopAmbient]);
+  }, [clearAllTimers, glow, scale, stopAmbient, stopAnimations]);
 
-  // ✅ al salir de la pantalla: detener TODO
+  // ✅ al salir de pantalla: parar todo SIEMPRE (tabs/back)
   useFocusEffect(
     useCallback(() => {
       return () => {
@@ -268,37 +210,50 @@ export default function BreathingScreen({ route }: any) {
     }, [stopEverything])
   );
 
+  useEffect(() => {
+    const unsub = navigation?.addListener?.("blur", () => {
+      void stopEverything();
+    });
+    return unsub;
+  }, [navigation, stopEverything]);
+
   const onToggleAmbient = useCallback(
     async (next: boolean) => {
       setAmbientOn(next);
 
-      if (!next) {
-        await stopAmbient(); // ✅ APAGAR = parar SIEMPRE
+      // ✅ Si NO está corriendo, NUNCA reproducir audio
+      if (!runningRef.current) {
+        await stopAmbient();
         return;
       }
 
-      await startAmbient(); // ✅ ENCENDER = arrancar
+      // ✅ Si está corriendo, aplicar
+      if (!next) await stopAmbient();
+      else await startAmbient();
     },
     [startAmbient, stopAmbient]
   );
 
-  const animateToOver = (toScale: number, durationMs: number) => {
-    stopAnimations();
-    Animated.parallel([
-      Animated.timing(scale, {
-        toValue: toScale,
-        duration: Math.max(120, durationMs),
-        useNativeDriver: true,
-        easing: Easing.inOut(Easing.quad),
-      }),
-      Animated.timing(glow, {
-        toValue: toScale > 0.85 ? 0.55 : 0.35,
-        duration: Math.max(120, durationMs),
-        useNativeDriver: true,
-        easing: Easing.inOut(Easing.quad),
-      }),
-    ]).start();
-  };
+  const animateToOver = useCallback(
+    (toScale: number, durationMs: number) => {
+      stopAnimations();
+      Animated.parallel([
+        Animated.timing(scale, {
+          toValue: toScale,
+          duration: Math.max(120, durationMs),
+          useNativeDriver: true,
+          easing: Easing.inOut(Easing.quad),
+        }),
+        Animated.timing(glow, {
+          toValue: toScale > 0.85 ? 0.55 : 0.35,
+          duration: Math.max(120, durationMs),
+          useNativeDriver: true,
+          easing: Easing.inOut(Easing.quad),
+        }),
+      ]).start();
+    },
+    [glow, scale, stopAnimations]
+  );
 
   const hapticPhase = async (next: Phase) => {
     try {
@@ -309,72 +264,70 @@ export default function BreathingScreen({ route }: any) {
     } catch {}
   };
 
-  const startTotalTimer = () => {
+  const startTotalTimer = useCallback(() => {
     if (totalTimerRef.current) clearInterval(totalTimerRef.current);
     totalTimerRef.current = setInterval(() => {
       setTotalElapsed((t) => t + 1);
     }, 1000);
-  };
+  }, []);
 
-  const startPhase = (next: Phase) => {
-    if (!runningRef.current) return;
-
-    setPhase(next);
-    void hapticPhase(next);
-
-    const secs =
-      next === "inhale"
-        ? mode.inhale
-        : next === "hold"
-        ? mode.hold
-        : next === "exhale"
-        ? mode.exhale
-        : next === "rest"
-        ? mode.rest
-        : 0;
-
-    setPhaseLeft(secs);
-
-    if (next === "inhale") animateToOver(1.05, secs * 1000);
-    if (next === "hold") {
-      stopAnimations();
-      Animated.timing(glow, {
-        toValue: 0.55,
-        duration: 180,
-        useNativeDriver: true,
-        easing: Easing.out(Easing.quad),
-      }).start();
-    }
-    if (next === "exhale") animateToOver(0.6, secs * 1000);
-    if (next === "rest") animateToOver(0.55, secs * 1000);
-
-    if (tickTimerRef.current) clearInterval(tickTimerRef.current);
-    tickTimerRef.current = setInterval(() => {
-      setPhaseLeft((prev) => clamp(prev - 1, 0, 9999));
-    }, 1000);
-
-    if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
-    phaseTimerRef.current = setTimeout(() => {
+  const startPhase = useCallback(
+    (next: Phase) => {
       if (!runningRef.current) return;
 
-      if (next === "exhale" && mode.rest === 0) setBreathsDone((b) => b + 1);
-      if (next === "rest") setBreathsDone((b) => b + 1);
+      setPhase(next);
+      void hapticPhase(next);
 
-      if (next === "inhale") {
-        if (mode.hold > 0) startPhase("hold");
-        else startPhase("exhale");
-      } else if (next === "hold") {
-        startPhase("exhale");
-      } else if (next === "exhale") {
-        if (mode.rest > 0) startPhase("rest");
-        else startPhase("inhale");
-      } else if (next === "rest") {
-        startPhase("inhale");
+      const secs =
+        next === "inhale" ? mode.inhale :
+        next === "hold" ? mode.hold :
+        next === "exhale" ? mode.exhale :
+        next === "rest" ? mode.rest : 0;
+
+      setPhaseLeft(secs);
+
+      if (next === "inhale") animateToOver(1.05, secs * 1000);
+      if (next === "hold") {
+        stopAnimations();
+        Animated.timing(glow, {
+          toValue: 0.55,
+          duration: 180,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.quad),
+        }).start();
       }
-    }, secs * 1000);
-  };
+      if (next === "exhale") animateToOver(0.6, secs * 1000);
+      if (next === "rest") animateToOver(0.55, secs * 1000);
 
-  // ✅ auto-stop si eliges 5/10 min
+      if (tickTimerRef.current) clearInterval(tickTimerRef.current);
+      tickTimerRef.current = setInterval(() => {
+        setPhaseLeft((prev) => clamp(prev - 1, 0, 9999));
+      }, 1000);
+
+      if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
+      phaseTimerRef.current = setTimeout(() => {
+        if (!runningRef.current) return;
+
+        if (next === "exhale" && mode.rest === 0) setBreathsDone((b) => b + 1);
+        if (next === "rest") setBreathsDone((b) => b + 1);
+
+        if (next === "inhale") {
+          if (mode.hold > 0) startPhase("hold");
+          else startPhase("exhale");
+        } else if (next === "hold") {
+          startPhase("exhale");
+        } else if (next === "exhale") {
+          if (mode.rest > 0) startPhase("rest");
+          else startPhase("inhale");
+        } else if (next === "rest") {
+          startPhase("inhale");
+        }
+      }, secs * 1000);
+    },
+    [animateToOver, glow, mode.exhale, mode.hold, mode.inhale, mode.rest, stopAnimations]
+  );
+
+  // ✅ auto-stop si hay límite
   useEffect(() => {
     if (!runningRef.current) return;
     if (totalLimitSec == null) return;
@@ -384,7 +337,8 @@ export default function BreathingScreen({ route }: any) {
     }
   }, [totalElapsed, totalLimitSec, stopEverything]);
 
-  const startCountdownThenRun = async () => {
+  // ✅ ESTO es lo que te estaba “rompiendo”: ahora es estable con useCallback
+  const startCountdownThenRun = useCallback(async () => {
     clearAllTimers();
     runningRef.current = true;
 
@@ -395,11 +349,11 @@ export default function BreathingScreen({ route }: any) {
     setPhase("countdown");
 
     animateToOver(0.75, 300);
-
     startTotalTimer();
 
+    // ✅ arranca ambiente SOLO cuando se inicia (y sin solapes)
+    await stopAmbient();
     if (ambientOn) await startAmbient();
-    else await stopAmbient();
 
     countdownTimerRef.current = setInterval(() => {
       setCountdown((c) => {
@@ -413,9 +367,17 @@ export default function BreathingScreen({ route }: any) {
         return next;
       });
     }, 1000);
-  };
+  }, [
+    ambientOn,
+    animateToOver,
+    clearAllTimers,
+    startAmbient,
+    startPhase,
+    startTotalTimer,
+    stopAmbient,
+  ]);
 
-  const onPressStartPause = async () => {
+  const onPressStartPause = useCallback(async () => {
     const isRunningPhase =
       phase === "inhale" || phase === "hold" || phase === "exhale" || phase === "rest";
 
@@ -445,9 +407,18 @@ export default function BreathingScreen({ route }: any) {
     }
 
     await startCountdownThenRun();
-  };
+  }, [
+    ambientOn,
+    clearAllTimers,
+    phase,
+    startAmbient,
+    startCountdownThenRun,
+    startPhase,
+    startTotalTimer,
+    stopAnimations,
+  ]);
 
-  async function onReset() {
+  const onReset = useCallback(async () => {
     runningRef.current = false;
     clearAllTimers();
     stopAnimations();
@@ -460,9 +431,39 @@ export default function BreathingScreen({ route }: any) {
     setPhaseLeft(0);
 
     animateToOver(0.55, 260);
-
     await stopAmbient();
-  }
+  }, [animateToOver, clearAllTimers, stopAmbient, stopAnimations]);
+
+  // ✅ Params: aplicar modo / tiempo / ambient… SIN re-dispararse en bucle
+  useEffect(() => {
+    const nextId = route?.params?.modeId as Mode["id"] | undefined;
+    const totalSeconds = route?.params?.totalSeconds as number | undefined;
+    const ambientParam = route?.params?.ambientOn as boolean | undefined;
+
+    const key = JSON.stringify({
+      nextId: nextId ?? null,
+      totalSeconds: typeof totalSeconds === "number" ? totalSeconds : null,
+      ambientParam: typeof ambientParam === "boolean" ? ambientParam : null,
+    });
+
+    if (lastParamsKeyRef.current === key) return;
+    lastParamsKeyRef.current = key;
+
+    // si llegan params nuevos, corta todo para evitar solapes
+    void stopEverything();
+
+    if (nextId) setModeId(nextId);
+
+    if (typeof totalSeconds === "number" && totalSeconds > 0) {
+      setTotalLimitOverrideSec(Math.floor(totalSeconds));
+      setTotalElapsed(0);
+    }
+
+    if (typeof ambientParam === "boolean") {
+      setAmbientOn(ambientParam);
+      void stopAmbient(); // ✅ jamás arrancar audio aquí
+    }
+  }, [route?.params?.modeId, route?.params?.totalSeconds, route?.params?.ambientOn, stopEverything, stopAmbient]);
 
   const phaseLabel =
     phase === "idle"
@@ -498,10 +499,7 @@ export default function BreathingScreen({ route }: any) {
 
   return (
     <View style={screenStyles.container}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120 }}
-      >
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
         <View style={screenStyles.header}>
           <Text style={screenStyles.title}>Ejercicio de Respiración</Text>
           <Text style={screenStyles.subtitle}>
@@ -511,10 +509,7 @@ export default function BreathingScreen({ route }: any) {
 
         <View style={styles.card}>
           {/* Selector de modo */}
-          <Pressable
-            onPress={() => setPickerOpen(true)}
-            style={({ pressed }) => [styles.modeBtn, pressed && { opacity: 0.92 }]}
-          >
+          <Pressable onPress={() => setPickerOpen(true)} style={({ pressed }) => [styles.modeBtn, pressed && { opacity: 0.92 }]}>
             <View style={{ flex: 1 }}>
               <Text style={styles.modeTitle}>{mode.title}</Text>
               <Text style={styles.modeSub}>{mode.subtitle}</Text>
@@ -535,11 +530,7 @@ export default function BreathingScreen({ route }: any) {
               <Text style={styles.toggleTitle}>Sonido ambiente</Text>
               <Text style={styles.toggleSub}>
                 Sugerido:{" "}
-                {AMBIENT_BY_MODE[mode.id] === "lluvia"
-                  ? "Lluvia"
-                  : AMBIENT_BY_MODE[mode.id] === "olas"
-                  ? "Olas"
-                  : "Bosque"}
+                {AMBIENT_BY_MODE[mode.id] === "lluvia" ? "Lluvia" : AMBIENT_BY_MODE[mode.id] === "olas" ? "Olas" : "Bosque"}
               </Text>
             </View>
             <Switch value={ambientOn} onValueChange={(v) => void onToggleAmbient(v)} />
@@ -551,49 +542,38 @@ export default function BreathingScreen({ route }: any) {
 
             <View style={styles.presetPills}>
               <Pressable
-                onPress={() => setTotalPreset("5")}
-                style={({ pressed }) => [
-                  styles.pill,
-                  totalPreset === "5" && styles.pillActive,
-                  pressed && { opacity: 0.92 },
-                ]}
+                onPress={() => {
+                  setTotalLimitOverrideSec(null);
+                  setTotalPreset("5");
+                }}
+                style={({ pressed }) => [styles.pill, totalPreset === "5" && styles.pillActive, pressed && { opacity: 0.92 }]}
               >
-                <Text style={[styles.pillText, totalPreset === "5" && styles.pillTextActive]}>
-                  5 min
-                </Text>
+                <Text style={[styles.pillText, totalPreset === "5" && styles.pillTextActive]}>5 min</Text>
               </Pressable>
 
               <Pressable
-                onPress={() => setTotalPreset("10")}
-                style={({ pressed }) => [
-                  styles.pill,
-                  totalPreset === "10" && styles.pillActive,
-                  pressed && { opacity: 0.92 },
-                ]}
+                onPress={() => {
+                  setTotalLimitOverrideSec(null);
+                  setTotalPreset("10");
+                }}
+                style={({ pressed }) => [styles.pill, totalPreset === "10" && styles.pillActive, pressed && { opacity: 0.92 }]}
               >
-                <Text style={[styles.pillText, totalPreset === "10" && styles.pillTextActive]}>
-                  10 min
-                </Text>
+                <Text style={[styles.pillText, totalPreset === "10" && styles.pillTextActive]}>10 min</Text>
               </Pressable>
 
               <Pressable
-                onPress={() => setTotalPreset("libre")}
-                style={({ pressed }) => [
-                  styles.pill,
-                  totalPreset === "libre" && styles.pillActive,
-                  pressed && { opacity: 0.92 },
-                ]}
+                onPress={() => {
+                  setTotalLimitOverrideSec(null);
+                  setTotalPreset("libre");
+                }}
+                style={({ pressed }) => [styles.pill, totalPreset === "libre" && styles.pillActive, pressed && { opacity: 0.92 }]}
               >
-                <Text style={[styles.pillText, totalPreset === "libre" && styles.pillTextActive]}>
-                  Libre
-                </Text>
+                <Text style={[styles.pillText, totalPreset === "libre" && styles.pillTextActive]}>Libre</Text>
               </Pressable>
             </View>
 
             <Text style={styles.smallTime}>
-              {totalLimitSec == null
-                ? `Tiempo: ${mmssFromSeconds(totalElapsed)}`
-                : `Quedan: ${mmssFromSeconds(remainingSec ?? 0)}`}
+              {totalLimitSec == null ? `Tiempo: ${mmssFromSeconds(totalElapsed)}` : `Quedan: ${mmssFromSeconds(remainingSec ?? 0)}`}
             </Text>
           </View>
 
@@ -608,51 +588,29 @@ export default function BreathingScreen({ route }: any) {
           <Text style={styles.phaseLabel}>{phaseLabel}</Text>
 
           <View style={styles.controls}>
-            <Pressable
-              onPress={() => void onPressStartPause()}
-              style={({ pressed }) => [styles.primaryBtn, pressed && { opacity: 0.9 }]}
-            >
+            <Pressable onPress={() => void onPressStartPause()} style={({ pressed }) => [styles.primaryBtn, pressed && { opacity: 0.9 }]}>
               <MaterialCommunityIcons
-                name={
-                  phase === "inhale" || phase === "hold" || phase === "exhale" || phase === "rest"
-                    ? "pause"
-                    : "play"
-                }
+                name={phase === "inhale" || phase === "hold" || phase === "exhale" || phase === "rest" ? "pause" : "play"}
                 size={18}
                 color="#fff"
               />
               <Text style={styles.primaryText}>
-                {phase === "inhale" || phase === "hold" || phase === "exhale" || phase === "rest"
-                  ? "Pausar"
-                  : "Comenzar"}
+                {phase === "inhale" || phase === "hold" || phase === "exhale" || phase === "rest" ? "Pausar" : "Comenzar"}
               </Text>
             </Pressable>
 
-            <Pressable
-              onPress={() => void onReset()}
-              style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.9 }]}
-            >
+            <Pressable onPress={() => void onReset()} style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.9 }]}>
               <MaterialCommunityIcons name="restart" size={18} color={colors.text} />
               <Text style={styles.secondaryText}>Reiniciar</Text>
             </Pressable>
           </View>
 
-          <Text style={styles.counter}>
-            Respiraciones: {breathsDone} · Ciclo: {cycleSeconds}s
-          </Text>
-
-          <Text style={styles.hint}>
-            Consejo: si estás tenso, prueba exhalar más largo (por ejemplo 4–0–8).
-          </Text>
+          <Text style={styles.counter}>Respiraciones: {breathsDone} · Ciclo: {cycleSeconds}s</Text>
+          <Text style={styles.hint}>Consejo: si estás tenso, prueba exhalar más largo (por ejemplo 4–0–8).</Text>
         </View>
 
         {/* Modal modos */}
-        <Modal
-          visible={pickerOpen}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setPickerOpen(false)}
-        >
+        <Modal visible={pickerOpen} transparent animationType="fade" onRequestClose={() => setPickerOpen(false)}>
           <Pressable style={styles.modalBackdrop} onPress={() => setPickerOpen(false)}>
             <Pressable style={styles.modalCard} onPress={() => {}}>
               <Text style={styles.modalTitle}>Elige un modo</Text>
@@ -670,16 +628,10 @@ export default function BreathingScreen({ route }: any) {
                         setModeId(item.id);
                         setPickerOpen(false);
                       }}
-                      style={({ pressed }) => [
-                        styles.modalItem,
-                        active && styles.modalItemActive,
-                        pressed && { opacity: 0.92 },
-                      ]}
+                      style={({ pressed }) => [styles.modalItem, active && styles.modalItemActive, pressed && { opacity: 0.92 }]}
                     >
                       <View style={{ flex: 1 }}>
-                        <Text style={[styles.modalItemTitle, active && { color: colors.primary }]}>
-                          {item.title}
-                        </Text>
+                        <Text style={[styles.modalItemTitle, active && { color: colors.primary }]}>{item.title}</Text>
                         <Text style={styles.modalItemSub}>{item.subtitle}</Text>
                       </View>
 
@@ -756,10 +708,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(198, 183, 226, 0.28)",
     alignItems: "center",
   },
-  pillActive: {
-    backgroundColor: "rgba(198, 183, 226, 0.30)",
-    borderColor: colors.primary,
-  },
+  pillActive: { backgroundColor: "rgba(198, 183, 226, 0.30)", borderColor: colors.primary },
   pillText: { fontSize: 12, fontWeight: "900", color: "rgba(74,74,74,0.70)" },
   pillTextActive: { color: colors.primary },
 
@@ -772,13 +721,7 @@ const styles = StyleSheet.create({
   },
 
   visualWrap: { marginTop: 12, alignItems: "center", justifyContent: "center", height: 200 },
-  glow: {
-    position: "absolute",
-    width: 190,
-    height: 190,
-    borderRadius: 999,
-    backgroundColor: "rgba(198, 183, 226, 0.35)",
-  },
+  glow: { position: "absolute", width: 190, height: 190, borderRadius: 999, backgroundColor: "rgba(198, 183, 226, 0.35)" },
   circle: {
     width: 170,
     height: 170,
@@ -791,13 +734,7 @@ const styles = StyleSheet.create({
   },
   circleText: { fontSize: 18, fontWeight: "900", color: colors.primary },
 
-  phaseLabel: {
-    textAlign: "center",
-    marginTop: 6,
-    fontSize: 13,
-    fontWeight: "800",
-    color: "rgba(74,74,74,0.75)",
-  },
+  phaseLabel: { textAlign: "center", marginTop: 6, fontSize: 13, fontWeight: "800", color: "rgba(74,74,74,0.75)" },
 
   controls: { flexDirection: "row", gap: 10, marginTop: 14 },
   primaryBtn: {
@@ -811,6 +748,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   primaryText: { color: "#fff", fontWeight: "900", fontSize: 14 },
+
   secondaryBtn: {
     flex: 1,
     backgroundColor: "rgba(255,255,255,0.92)",
@@ -825,34 +763,11 @@ const styles = StyleSheet.create({
   },
   secondaryText: { color: colors.text, fontWeight: "900", fontSize: 14 },
 
-  counter: {
-    marginTop: 12,
-    textAlign: "center",
-    fontSize: 12,
-    fontWeight: "800",
-    color: "rgba(74,74,74,0.7)",
-  },
-  hint: {
-    marginTop: 10,
-    textAlign: "center",
-    fontSize: 12,
-    fontWeight: "700",
-    color: "rgba(74,74,74,0.62)",
-  },
+  counter: { marginTop: 12, textAlign: "center", fontSize: 12, fontWeight: "800", color: "rgba(74,74,74,0.7)" },
+  hint: { marginTop: 10, textAlign: "center", fontSize: 12, fontWeight: "700", color: "rgba(74,74,74,0.62)" },
 
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.25)",
-    padding: 18,
-    justifyContent: "center",
-  },
-  modalCard: {
-    backgroundColor: "#fff",
-    borderRadius: 18,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: "rgba(198, 183, 226, 0.35)",
-  },
+  modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.25)", padding: 18, justifyContent: "center" },
+  modalCard: { backgroundColor: "#fff", borderRadius: 18, padding: 14, borderWidth: 1, borderColor: "rgba(198, 183, 226, 0.35)" },
   modalTitle: { fontSize: 15, fontWeight: "900", color: colors.text, marginBottom: 10 },
   modalItem: {
     padding: 12,

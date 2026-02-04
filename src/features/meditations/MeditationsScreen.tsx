@@ -1,14 +1,20 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, StyleSheet, Pressable, Image, FlatList, ImageBackground } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+
 import { colors } from "../../shared/theme/colors";
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { SESSIONS, type MeditationSession } from "./meditations.data";
-import { getFavorites, toggleFavorite, getLastSession } from "./meditations.storage";
+import {
+  getFavorites,
+  toggleFavorite,
+  getLastSession,
+  type MeditationId,
+} from "./meditations.storage";
 
 export default function MeditationsScreen({ navigation }: any) {
-  const [favs, setFavs] = useState<string[]>([]);
-  const [last, setLast] = useState<string | null>(null);
+  const [favs, setFavs] = useState<MeditationId[]>([]);
+  const [last, setLast] = useState<MeditationId | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -19,13 +25,13 @@ export default function MeditationsScreen({ navigation }: any) {
 
   const favSet = useMemo(() => new Set(favs), [favs]);
 
-  const onToggleFav = async (id: string) => {
+  const onToggleFav = async (id: MeditationId) => {
     const next = await toggleFavorite(id);
     setFavs(next);
   };
 
   const renderItem = ({ item }: { item: MeditationSession }) => {
-    const isFav = favSet.has(item.id);
+    const isFav = favSet.has(item.id as MeditationId);
     const isLast = last === item.id;
 
     return (
@@ -48,7 +54,15 @@ export default function MeditationsScreen({ navigation }: any) {
           <View style={styles.row}>
             <Text style={styles.title}>{item.title}</Text>
 
-            <Pressable onPress={() => onToggleFav(item.id)} hitSlop={10}>
+            {/* ✅ MUY IMPORTANTE: que NO dispare la navegación */}
+            <Pressable
+              onPress={(e) => {
+                e.stopPropagation?.();
+                void onToggleFav(item.id as MeditationId);
+              }}
+              hitSlop={12}
+              style={({ pressed }) => [pressed && { opacity: 0.85 }]}
+            >
               <MaterialCommunityIcons
                 name={isFav ? "heart" : "heart-outline"}
                 size={22}
@@ -85,8 +99,10 @@ export default function MeditationsScreen({ navigation }: any) {
 
   return (
     <View style={screenStyles.container}>
-      <Text style={screenStyles.title}>Meditaciones</Text>
-      <Text style={screenStyles.subtitle}>Sesiones guiadas para relajarte</Text>
+      <View style={screenStyles.header}>
+        <Text style={screenStyles.title}>Meditaciones</Text>
+        <Text style={screenStyles.subtitle}>Sesiones guiadas para relajarte</Text>
+      </View>
 
       <FlatList
         data={SESSIONS}
@@ -107,17 +123,16 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
 
-  // ✅ Marco visual para que la imagen se vea entera y bonita
   media: {
     width: "100%",
-    height: 150, // ajusta si quieres más/menos alto
+    height: 150,
     backgroundColor: "rgba(198, 183, 226, 0.14)",
     alignItems: "center",
     justifyContent: "center",
   },
   mediaOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(250, 249, 252, 0.10)", // velo suave para que el blur no “ensucie”
+    backgroundColor: "rgba(250, 249, 252, 0.10)",
   },
   mediaImg: {
     width: "92%",

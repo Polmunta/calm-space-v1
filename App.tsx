@@ -19,6 +19,8 @@ import SOSScreen from "./src/features/sos/SOSScreen";
 import SOSDetailScreen from "./src/features/sos/SOSDetailScreen";
 import MeditationsScreen from "./src/features/meditations/MeditationsScreen";
 import MeditationPlayerScreen from "./src/features/meditations/MeditationPlayerScreen";
+import RoutineScreen from "./src/features/routine/RoutineScreen";
+
 
 // root (fuera de tabs)
 import ProfileScreen from "./src/features/profile/ProfileScreen";
@@ -39,6 +41,7 @@ function HomeStack() {
     <Stack.Navigator screenOptions={stackScreenOptions}>
       {/* ✅ ya NO necesitamos header aquí; lo pintamos dentro de Home */}
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Routine" component={RoutineScreen} options={{ title: "Rutina rápida" }} />
     </Stack.Navigator>
   );
 }

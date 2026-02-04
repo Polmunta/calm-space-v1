@@ -32,10 +32,10 @@ export const SESSIONS: MeditationSession[] = [
     cover: require("../../../assets/meditations/meditacion.png"),
     minutesLabel: "21:04",
     steps: [
-      { title: "Preparación", fromSec: 0, toSec: 150 },
-      { title: "Respiración", fromSec: 150, toSec: 420 },
-      { title: "Cuerpo", fromSec: 420, toSec: 780 },
-      { title: "Pensamientos", fromSec: 780, toSec: 1080 },
+      { title: "Preparación", fromSec: 0, toSec: 295},
+      { title: "Respiración", fromSec: 295, toSec: 600 },
+      { title: "Cuerpo", fromSec: 600, toSec: 964 },
+      { title: "Pensamientos", fromSec: 964, toSec: 1080 },
       { title: "Cierre suave", fromSec: 1080, toSec: 1264 },
     ],
     audioByLang: {
@@ -52,11 +52,11 @@ export const SESSIONS: MeditationSession[] = [
     minutesLabel: "22:04",
     recommended: true,
     steps: [
-      { title: "Acomodarte", fromSec: 0, toSec: 180 },
-      { title: "Respiración lenta", fromSec: 180, toSec: 480 },
-      { title: "Relajar cuerpo", fromSec: 480, toSec: 900 },
-      { title: "Soltar tensión", fromSec: 900, toSec: 1200 },
-      { title: "Final / descanso", fromSec: 1200, toSec: 1324 },
+      { title: "Acomodarte", fromSec: 0, toSec: 295 },
+      { title: "Respiración lenta", fromSec: 295, toSec: 600 },
+      { title: "Relajar cuerpo", fromSec: 600, toSec: 958 },
+      { title: "Soltar tensión", fromSec: 958, toSec: 1080 },
+      { title: "Final / descanso", fromSec: 1080, toSec: 1324 },
     ],
     audioByLang: {
       es: require("../../../assets/audio/relajacion_completa.mp3"),

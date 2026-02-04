@@ -87,6 +87,21 @@ export default function HomeScreen({ navigation }: any) {
             />
           </Pressable>
 
+          {/* Rutina rápida — pequeña y centrada */}
+         <View style={styles.quickRow}>
+           <Pressable
+              onPress={() => navigation.navigate("Routine")} // o directo a breathing si prefieres
+              style={({ pressed }) => [styles.quickMini, pressed && { opacity: 0.9 }]}
+            >
+              <View style={styles.quickMiniIcon}>
+              <MaterialCommunityIcons name="timer-outline" size={18} color={colors.primary} />
+             </View>
+             <Text style={styles.quickMiniText}>Rutina rápida</Text>
+           </Pressable>
+          </View>
+
+
+
           {/* Grid */}
           <View style={styles.grid}>
             <Tile
@@ -337,6 +352,45 @@ const styles = StyleSheet.create({
   pressedLite: {
     opacity: 0.85,
   },
+
+ quickRow: {
+  alignItems: "center",
+  marginBottom: 12,
+},
+
+quickMini: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 10,
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+  borderRadius: 16,
+  backgroundColor: "rgba(255,255,255,0.92)",
+  borderWidth: 1,
+  borderColor: "rgba(198, 183, 226, 0.35)",
+  // tamaño: aprox mitad o menos que una tarjeta grande
+  width: "56%",
+  justifyContent: "center",
+},
+
+quickMiniIcon: {
+  width: 30,
+  height: 30,
+  borderRadius: 12,
+  backgroundColor: "rgba(198, 183, 226, 0.22)",
+  alignItems: "center",
+  justifyContent: "center",
+  borderWidth: 1,
+  borderColor: "rgba(198, 183, 226, 0.45)",
+},
+
+quickMiniText: {
+  fontSize: 13,
+  fontWeight: "900",
+  color: "rgba(74,74,74,0.78)",
+},
+
+
 
   pressableShadow: Platform.select({
     ios: {
