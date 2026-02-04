@@ -11,12 +11,16 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
+import { useTranslation } from "react-i18next";
+
+
 import { colors } from "./shared/theme/colors";
 import { screenStyles } from "./shared/ui/screenStyles";
 
 const BRAND_LOGO = require("../assets/logo.png"); // ✅ usa tu logo 486x486
 
 export default function HomeScreen({ navigation }: any) {
+  const { t } = useTranslation();
   return (
     <SafeAreaView style={[screenStyles.container, { paddingTop: 0 }]}>
       {/* ✅ FILA 1: iconos arriba (zona azul) */}
@@ -55,7 +59,8 @@ export default function HomeScreen({ navigation }: any) {
             </View>
             <Text style={styles.appName}>CalmSpace</Text>
           </View>
-          <Text style={styles.appTagline}>Tu espacio de calma, paso a paso</Text>
+          <Text style={styles.appTagline}>{t("home.tagline")}</Text>
+
         </View>
 
         {/* ✅ FILA 3: tarjetas más abajo (zona roja) */}
@@ -75,8 +80,9 @@ export default function HomeScreen({ navigation }: any) {
               </View>
 
               <View style={{ flex: 1 }}>
-                <Text style={styles.sosTitle}>SOS</Text>
-                <Text style={styles.sosSub}>Ayuda rápida para calmarte ahora</Text>
+                <Text style={styles.sosTitle}>{t("home.sosTitle")}</Text>
+                <Text style={styles.sosSub}>{t("home.sosSub")}</Text>
+
               </View>
             </View>
 
@@ -96,7 +102,8 @@ export default function HomeScreen({ navigation }: any) {
               <View style={styles.quickMiniIcon}>
               <MaterialCommunityIcons name="timer-outline" size={18} color={colors.primary} />
              </View>
-             <Text style={styles.quickMiniText}>Rutina rápida</Text>
+             <Text style={styles.quickMiniText}>{t("home.routine")}</Text>
+
            </Pressable>
           </View>
 
@@ -105,29 +112,33 @@ export default function HomeScreen({ navigation }: any) {
           {/* Grid */}
           <View style={styles.grid}>
             <Tile
-              icon="weather-windy"
-              title="Respiración"
-              subtitle="Ejercicios guiados"
-              onPress={() => navigation.navigate("TabBreathing")}
+             icon="weather-windy"
+             title={t("home.tileBreathingTitle")}
+             subtitle={t("home.tileBreathingSub")}
+             onPress={() => navigation.navigate("TabBreathing")}
             />
+
             <Tile
-              icon="target"
-              title="Atención plena"
-              subtitle="Presencia y foco"
-              onPress={() => navigation.navigate("TabMindfulness")}
+             icon="target"
+             title={t("home.tileMindTitle")}
+             subtitle={t("home.tileMindSub")}
+             onPress={() => navigation.navigate("TabMindfulness")}
             />
+
             <Tile
-              icon="music-note-outline"
-              title="Sonidos"
-              subtitle="Naturaleza & relax"
-              onPress={() => navigation.navigate("TabSounds")}
+             icon="music-note-outline"
+             title={t("home.tileSoundsTitle")}
+             subtitle={t("home.tileSoundsSub")}
+             onPress={() => navigation.navigate("TabSounds")}
             />
+
             <Tile
-              icon="meditation"
-              title="Meditaciones"
-              subtitle="Sesiones guiadas"
-              onPress={() => navigation.navigate("TabMeditations")}
+             icon="meditation"
+             title={t("home.tileMeditationsTitle")}
+             subtitle={t("home.tileMeditationsSub")}
+             onPress={() => navigation.navigate("TabMeditations")}
             />
+
           </View>
 
           {/* Diario */}
@@ -145,8 +156,9 @@ export default function HomeScreen({ navigation }: any) {
               </View>
 
               <View style={{ flex: 1 }}>
-                <Text style={styles.diaryTitle}>Diario</Text>
-                <Text style={styles.diarySub}>Escribe y reflexiona con ayuda</Text>
+                <Text style={styles.diaryTitle}>{t("home.diaryTitle")}</Text>
+                <Text style={styles.diarySub}>{t("home.diarySub")}</Text>
+
               </View>
             </View>
 

@@ -2,10 +2,63 @@
   "tabs": {
     "home": "Inici",
     "sos": "SOS",
-    "breathing": "Respira",
-    "mindfulness": "Focalitza",
+    "routine": "Rutina ràpida",
+    "breathing": "Respirar",
+    "mindfulness": "Atenció plena",
     "sounds": "Sons",
-    "meditations": "Medita",
+    "meditations": "Meditacions",
     "journal": "Diari"
+  },
+  "nav": {
+    "sos": "SOS",
+    "breathing": "Respiració",
+    "mindfulness": "Atenció plena",
+    "sounds": "Sons",
+    "meditations": "Meditacions",
+    "journal": "Diari",
+    "profile": "Perfil",
+    "language": "Idioma"
+  },
+  
+  "home": {
+    "tagline": "El teu espai de calma, pas a pas",
+
+    "sosTitle": "SOS",
+    "sosSub": "Ajuda ràpida per calmar-te ara",
+
+    "routine": "Rutina ràpida",
+
+    "tileBreathingTitle": "Respiració",
+    "tileBreathingSub": "Exercicis guiats",
+
+    "tileMindTitle": "Atenció plena",
+    "tileMindSub": "Presència i focus",
+
+    "tileSoundsTitle": "Sons",
+    "tileSoundsSub": "Natura i relax",
+
+    "tileMeditationsTitle": "Meditacions",
+    "tileMeditationsSub": "Sessions guiades",
+
+    "diaryTitle": "Diari",
+    "diarySub": "Escriu i reflexiona amb ajuda"
+  },
+
+
+  "language": { "title": "Idioma", "subtitle": "Tria l’idioma de l’app" },
+
+  
+  "routine": {
+    "title": "Rutina ràpida",
+    "subtitle": "Tria una durada i comença al moment.",
+    "items": {
+      "2min": { "title": "2 min · Calma", "subtitle": "Respiració calma + pluja" },
+      "5min": { "title": "5 min · Focus", "subtitle": "Respiració quadrada + bosc" },
+      "10min": { "title": "10 min · Son", "subtitle": "Respiració son + onades" }
+    }
   }
+
+
+
+
 }

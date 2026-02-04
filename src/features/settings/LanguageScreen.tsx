@@ -1,5 +1,7 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
+import { useTranslation } from "react-i18next";
+
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { colors } from "../../shared/theme/colors";
 import { getAppLanguage, setAppLanguage, type AppLang } from "../../shared/i18n/i18n";
@@ -11,14 +13,24 @@ const LANGS: { id: AppLang; title: string; subtitle: string }[] = [
 ];
 
 export default function LanguageScreen() {
-  const selected = useMemo(() => getAppLanguage(), []);
+  const { t } = useTranslation(); // ✅ (opcional por ahora, pero ya listo para traducir pantalla)
+  const [selected, setSelected] = useState<AppLang>(getAppLanguage()); // ✅ REACTIVO
+
+  // ✅ por si al entrar el idioma guardado es distinto
+  useEffect(() => {
+    setSelected(getAppLanguage());
+  }, []);
+
+  const onPick = async (lang: AppLang) => {
+    setSelected(lang);        // ✅ marca AL INSTANTE
+    await setAppLanguage(lang); // ✅ cambia idioma AL INSTANTE + guarda
+  };
 
   return (
     <View style={screenStyles.container}>
       <View style={screenStyles.header}>
-        {/* ✅ QUITAMOS el “Idioma” en negro dentro de la pantalla */}
         <Text style={screenStyles.subtitle}>
-          Elige el idioma de la app. Las meditaciones cambiarán de audio según el idioma.
+          {t("language.subtitle")}
         </Text>
       </View>
 
@@ -30,7 +42,7 @@ export default function LanguageScreen() {
         return (
           <Pressable
             key={l.id}
-            onPress={() => void setAppLanguage(l.id)}
+            onPress={() => void onPick(l.id)}
             style={({ pressed }) => [
               styles.row,
               active && styles.rowActive,

@@ -4,6 +4,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { colors } from "../../shared/theme/colors";
+import { useTranslation } from "react-i18next";
+
 
 type RoutineItem = {
   id: string;
@@ -14,6 +16,7 @@ type RoutineItem = {
 };
 
 export default function RoutineScreen({ navigation }: any) {
+  const { t } = useTranslation();
   // ✅ navegar a tabs (sibling) de forma robusta
   const navToTab = useCallback(
     (tabName: string, params: any) => {
@@ -28,8 +31,8 @@ export default function RoutineScreen({ navigation }: any) {
   const routines: RoutineItem[] = [
     {
       id: "2calma",
-      title: "2 min · Calma",
-      subtitle: "Respiración calma + lluvia",
+      title: t("routine.items.2min.title"),
+    subtitle: t("routine.items.2min.subtitle"),
       icon: "weather-windy",
       onPress: () =>
         navToTab("TabBreathing", {
@@ -44,8 +47,8 @@ export default function RoutineScreen({ navigation }: any) {
     },
     {
       id: "5foco",
-      title: "5 min · Foco",
-      subtitle: "Respiración cuadrada + bosque",
+      title: t("routine.items.5min.title"),
+      subtitle: t("routine.items.5min.subtitle"),
       icon: "target",
       onPress: () =>
         navToTab("TabBreathing", {
@@ -60,8 +63,8 @@ export default function RoutineScreen({ navigation }: any) {
     },
     {
       id: "10sueno",
-      title: "10 min · Sueño",
-      subtitle: "Respiración sueño + olas",
+      title: t("routine.items.10min.title"),
+      subtitle: t("routine.items.10min.subtitle"),
       icon: "sleep",
       onPress: () =>
         navToTab("TabBreathing", {
@@ -79,9 +82,9 @@ export default function RoutineScreen({ navigation }: any) {
   return (
     <View style={screenStyles.container}>
       <View style={screenStyles.header}>
-        <Text style={screenStyles.title}>Rutina rápida</Text>
+        <Text style={screenStyles.title}>{t("routine.title")}</Text>
         <Text style={screenStyles.subtitle}>
-          Elige una duración y empieza al momento.
+          {t("routine.subtitle")}
         </Text>
       </View>
 
@@ -133,3 +136,4 @@ const styles = StyleSheet.create({
   title: { fontSize: 15, fontWeight: "900", color: colors.text },
   sub: { marginTop: 4, fontSize: 12, fontWeight: "700", color: "rgba(74,74,74,0.65)" },
 });
+  

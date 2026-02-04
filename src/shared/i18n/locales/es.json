@@ -2,10 +2,99 @@
   "tabs": {
     "home": "Inicio",
     "sos": "SOS",
-    "breathing": "Respira",
-    "mindfulness": "Foco",
+    "breathing": "Respirar",
+    "mindfulness": "Atención plena",
     "sounds": "Sonidos",
-    "meditations": "Medita",
+    "meditations": "Meditaciones",
     "journal": "Diario"
+  },
+   "nav": {
+    "sos": "SOS",
+    "routine": "Rutina rápida",
+    "breathing": "Respiración",
+    "mindfulness": "Atención plena",
+    "sounds": "Sonidos",
+    "meditations": "Meditaciones",
+    "journal": "Diario",
+    "profile": "Perfil",
+    "language": "Idioma"
+  },
+  "home": {
+    "tagline": "Tu espacio de calma, paso a paso",
+    "sosTitle": "SOS",
+    "sosSub": "Ayuda rápida para calmarte ahora",
+    "routine": "Rutina rápida",
+    "tileBreathingTitle": "Respiración",
+    "tileBreathingSub": "Ejercicios guiados",
+    "tileMindTitle": "Atención plena",
+    "tileMindSub": "Presencia y foco",
+    "tileSoundsTitle": "Sonidos",
+    "tileSoundsSub": "Naturaleza & relax",
+    "tileMeditationsTitle": "Meditaciones",
+    "tileMeditationsSub": "Sesiones guiadas",
+    "diaryTitle": "Diario",
+    "diarySub": "Escribe y reflexiona con ayuda"
+  },
+  "profile": {
+    "title": "Perfil",
+    "subtitle": "Tu progreso.",
+    "yourName": "Tu nombre",
+    "namePlaceholder": "Escribe tu nombre…",
+    "maxChars": "Máx {{count}} caracteres",
+    "streak": "🔥 Racha: {{days}} días",
+    "totalCalm": "Tiempo total de calma: {{time}}",
+    "lastActivity": "Última actividad: {{label}}"
+  },
+  "language": {
+    "title": "Idioma",
+    "subtitle": "Elige el idioma de la app"
+  },
+  
+  "routine": {
+    "title": "Rutina rápida",
+    "subtitle": "Elige una duración y empieza al momento.",
+    "items": {
+      "2min": { "title": "2 min · Calma", "subtitle": "Respiración calma + lluvia" },
+      "5min": { "title": "5 min · Foco", "subtitle": "Respiración cuadrada + bosque" },
+      "10min": { "title": "10 min · Sueño", "subtitle": "Respiración sueño + olas" }
+    }
+  },
+
+
+  "breathing": {
+    "title": "Ejercicio de Respiración",
+    "subtitle": "Sigue la guía visual para practicar la respiración consciente. Elige el modo que más te encaje hoy.",
+    "ambientTitle": "Sonido ambiente",
+    "ambientSuggested": "Sugerido: {{name}}",
+    "totalTime": "Tiempo total",
+    "time": "Tiempo: {{time}}",
+    "remaining": "Quedan: {{time}}",
+    "start": "Comenzar",
+    "pause": "Pausar",
+    "reset": "Reiniciar",
+    "modes": "Elige un modo",
+    "phase": {
+      "ready": "Listo",
+      "startsIn": "Empieza en {{n}}",
+      "inhale": "Inhala · {{s}}s",
+      "hold": "Mantén · {{s}}s",
+      "exhale": "Exhala · {{s}}s",
+      "rest": "Pausa · {{s}}s",
+      "paused": "Pausado"
+    },
+    "big": {
+      "paused": "Pausado",
+      "inhale": "Inhala",
+      "hold": "Mantén",
+      "exhale": "Exhala",
+      "rest": "Pausa"
+    },
+    "hint": "Consejo: si estás tenso, prueba exhalar más largo (por ejemplo 4–0–8).",
+    "counter": "Respiraciones: {{n}} · Ciclo: {{s}}s",
+    "ambient": {
+      "rain": "Lluvia",
+      "waves": "Olas",
+      "forest": "Bosque"
+    }
   }
 }

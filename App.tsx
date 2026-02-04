@@ -6,7 +6,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
-import i18n, { initAppLanguage } from "./src/shared/i18n/i18n";
+import { initAppLanguage } from "./src/shared/i18n/i18n";
 import { colors } from "./src/shared/theme/colors";
 
 // screens
@@ -20,7 +20,6 @@ import SOSDetailScreen from "./src/features/sos/SOSDetailScreen";
 import MeditationsScreen from "./src/features/meditations/MeditationsScreen";
 import MeditationPlayerScreen from "./src/features/meditations/MeditationPlayerScreen";
 import RoutineScreen from "./src/features/routine/RoutineScreen";
-
 
 // root (fuera de tabs)
 import ProfileScreen from "./src/features/profile/ProfileScreen";
@@ -37,61 +36,68 @@ const stackScreenOptions = {
 };
 
 function HomeStack() {
+  const { t } = useTranslation();
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
       {/* ✅ ya NO necesitamos header aquí; lo pintamos dentro de Home */}
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="Routine" component={RoutineScreen} options={{ title: "Rutina rápida" }} />
+      <Stack.Screen name="Routine" component={RoutineScreen} options={{ title: t("nav.routine") }} />
     </Stack.Navigator>
   );
 }
 
 function SOSStack() {
+  const { t } = useTranslation();
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
-      <Stack.Screen name="SOS" component={SOSScreen} options={{ title: "SOS" }} />
-      <Stack.Screen name="SOSDetail" component={SOSDetailScreen} options={{ title: "SOS" }} />
+      <Stack.Screen name="SOS" component={SOSScreen} options={{ title: t("nav.sos") }} />
+      <Stack.Screen name="SOSDetail" component={SOSDetailScreen} options={{ title: t("nav.sos") }} />
     </Stack.Navigator>
   );
 }
 
 function BreathingStack() {
+  const { t } = useTranslation();
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
-      <Stack.Screen name="Breathing" component={BreathingScreen} options={{ title: "Respiración" }} />
+      <Stack.Screen name="Breathing" component={BreathingScreen} options={{ title: t("nav.breathing") }} />
     </Stack.Navigator>
   );
 }
 
 function MindfulnessStack() {
+  const { t } = useTranslation();
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
-      <Stack.Screen name="Mindfulness" component={MindfulnessScreen} options={{ title: "Atención plena" }} />
+      <Stack.Screen name="Mindfulness" component={MindfulnessScreen} options={{ title: t("nav.mindfulness") }} />
     </Stack.Navigator>
   );
 }
 
 function SoundsStack() {
+  const { t } = useTranslation();
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
-      <Stack.Screen name="Sounds" component={SoundsScreen} options={{ title: "Sonidos" }} />
+      <Stack.Screen name="Sounds" component={SoundsScreen} options={{ title: t("nav.sounds") }} />
     </Stack.Navigator>
   );
 }
 
 function MeditationsStack() {
+  const { t } = useTranslation();
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
-      <Stack.Screen name="Meditations" component={MeditationsScreen} options={{ title: "Meditaciones" }} />
-      <Stack.Screen name="MeditationPlayer" component={MeditationPlayerScreen} options={{ title: "Meditaciones" }} />
+      <Stack.Screen name="Meditations" component={MeditationsScreen} options={{ title: t("nav.meditations") }} />
+      <Stack.Screen name="MeditationPlayer" component={MeditationPlayerScreen} options={{ title: t("nav.meditations") }} />
     </Stack.Navigator>
   );
 }
 
 function JournalStack() {
+  const { t } = useTranslation();
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
-      <Stack.Screen name="Journal" component={JournalScreen} options={{ title: "Diario" }} />
+      <Stack.Screen name="Journal" component={JournalScreen} options={{ title: t("nav.journal") }} />
     </Stack.Navigator>
   );
 }
@@ -141,6 +147,7 @@ function Tabs() {
 
 export default function App() {
   const [ready, setReady] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     (async () => {
@@ -166,7 +173,7 @@ export default function App() {
           component={ProfileScreen}
           options={{
             headerShown: true,
-            title: "Perfil",
+            title: t("nav.profile"),
             headerStyle: { backgroundColor: "#FAF9FC" },
             headerTintColor: colors.primary,
             headerTitleStyle: { fontWeight: "800", color: colors.primary },
@@ -177,7 +184,7 @@ export default function App() {
           component={LanguageScreen}
           options={{
             headerShown: true,
-            title: "Idioma",
+            title: t("nav.language"),
             headerStyle: { backgroundColor: "#FAF9FC" },
             headerTintColor: colors.primary,
             headerTitleStyle: { fontWeight: "800", color: colors.primary },

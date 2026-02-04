@@ -2,10 +2,68 @@
   "tabs": {
     "home": "Home",
     "sos": "SOS",
-    "breathing": "Breathe",
-    "mindfulness": "Focus",
+    "routine": "Quick routine",
+    "breathing": "Breathing",
+    "mindfulness": "Mindfulness",
     "sounds": "Sounds",
-    "meditations": "Meditate",
+    "meditations": "Meditations",
     "journal": "Journal"
+  },
+  "nav": {
+    "sos": "SOS",
+    "breathing": "Breathing",
+    "mindfulness": "Mindfulness",
+    "sounds": "Sounds",
+    "meditations": "Meditations",
+    "journal": "Journal",
+    "profile": "Profile",
+    "language": "Language"
+  },
+  
+  "home": {
+    "tagline": "Your calm space, step by step",
+
+    "sosTitle": "SOS",
+    "sosSub": "Quick help to calm down now",
+
+    "routine": "Quick routine",
+
+    "tileBreathingTitle": "Breathing",
+    "tileBreathingSub": "Guided exercises",
+
+    "tileMindTitle": "Mindfulness",
+    "tileMindSub": "Presence and focus",
+
+    "tileSoundsTitle": "Sounds",
+    "tileSoundsSub": "Nature and relaxation",
+
+    "tileMeditationsTitle": "Meditations",
+    "tileMeditationsSub": "Guided sessions",
+
+    "diaryTitle": "Journal",
+    "diarySub": "Write and reflect with support"
+  },
+
+
+  "language": { "title": "Language", "subtitle": "Choose the app language" },
+ 
+  
+  
+  "routine": {
+    "title": "Quick routine",
+    "subtitle": "Choose a duration and start right away.",
+    "items": {
+      "2min": { "title": "2 min · Calm", "subtitle": "Calm breathing + rain" },
+      "5min": { "title": "5 min · Focus", "subtitle": "Box breathing + forest" },
+      "10min": { "title": "10 min · Sleep", "subtitle": "Sleep breathing + waves" }
+    }
   }
+
+
+  
+
+
 }
+
+
+
