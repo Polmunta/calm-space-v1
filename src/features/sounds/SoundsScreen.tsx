@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { Audio } from "expo-av";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
+
 
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { colors } from "../../shared/theme/colors";
@@ -32,6 +34,8 @@ const SOUNDS: SoundItem[] = [
 type StopReason = "blur" | "unmount" | "manual" | "switch" | "autoplay";
 
 export default function SoundsScreen({ route, navigation }: any) {
+  const { t } = useTranslation();
+
   const soundRef = useRef<Audio.Sound | null>(null);
   const busyRef = useRef(false);
 
@@ -168,17 +172,19 @@ export default function SoundsScreen({ route, navigation }: any) {
           <MaterialCommunityIcons name={item.icon} size={28} color={colors.primary} />
         </View>
 
-        <Text style={styles.tileTitle}>{item.title}</Text>
+        <Text style={styles.tileTitle}>
+          {t(`sounds.items.${item.id}.title`, { defaultValue: item.title })}
+        </Text>
 
         <View style={styles.tileFooter}>
           {isLoading ? (
             <View style={styles.statusRow}>
               <ActivityIndicator />
-              <Text style={styles.tileMeta}>Cargando…</Text>
+              <Text style={styles.tileMeta}>{t("sounds.loading")}</Text>
             </View>
           ) : (
             <Text style={styles.tileMeta}>
-              {isPlaying ? "Reproduciendo" : "Tocar para reproducir"}
+              {isPlaying ? t("sounds.playing") : t("sounds.tapToPlay")}
             </Text>
           )}
         </View>
@@ -189,8 +195,8 @@ export default function SoundsScreen({ route, navigation }: any) {
   return (
     <View style={screenStyles.container}>
       <View style={screenStyles.header}>
-        <Text style={screenStyles.title}>Sonidos Naturaleza</Text>
-        <Text style={screenStyles.subtitle}>Sonidos para dormir o relajarte.</Text>
+        <Text style={screenStyles.title}>{t("sounds.title")}</Text>
+        <Text style={screenStyles.subtitle}>{t("sounds.subtitle")}</Text>
       </View>
 
       <FlatList
@@ -211,7 +217,9 @@ export default function SoundsScreen({ route, navigation }: any) {
           pressed && playingId && !stopping && !loadingId && { opacity: 0.9 },
         ]}
       >
-        <Text style={styles.stopText}>{stopping ? "Deteniendo…" : "Detener"}</Text>
+        <Text style={styles.stopText}>
+          {stopping ? t("sounds.stopping") : t("sounds.stop")}
+        </Text>
       </Pressable>
     </View>
   );

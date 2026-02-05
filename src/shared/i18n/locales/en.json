@@ -2,8 +2,7 @@
   "tabs": {
     "home": "Home",
     "sos": "SOS",
-    "routine": "Quick routine",
-    "breathing": "Breathing",
+    "breathing": "Breathe",
     "mindfulness": "Mindfulness",
     "sounds": "Sounds",
     "meditations": "Meditations",
@@ -11,6 +10,7 @@
   },
   "nav": {
     "sos": "SOS",
+    "routine": "Quick routine",
     "breathing": "Breathing",
     "mindfulness": "Mindfulness",
     "sounds": "Sounds",
@@ -19,36 +19,36 @@
     "profile": "Profile",
     "language": "Language"
   },
-  
   "home": {
     "tagline": "Your calm space, step by step",
-
     "sosTitle": "SOS",
     "sosSub": "Quick help to calm down now",
-
     "routine": "Quick routine",
-
     "tileBreathingTitle": "Breathing",
     "tileBreathingSub": "Guided exercises",
-
     "tileMindTitle": "Mindfulness",
     "tileMindSub": "Presence and focus",
-
     "tileSoundsTitle": "Sounds",
-    "tileSoundsSub": "Nature and relaxation",
-
+    "tileSoundsSub": "Nature & relax",
     "tileMeditationsTitle": "Meditations",
     "tileMeditationsSub": "Guided sessions",
-
     "diaryTitle": "Journal",
-    "diarySub": "Write and reflect with support"
+    "diarySub": "Write and reflect with help"
   },
-
-
-  "language": { "title": "Language", "subtitle": "Choose the app language" },
- 
-  
-  
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Your progress.",
+    "yourName": "Your name",
+    "namePlaceholder": "Type your name…",
+    "maxChars": "Max {{count}} characters",
+    "streak": "🔥 Streak: {{days}} days",
+    "totalCalm": "Total calm time: {{time}}",
+    "lastActivity": "Last activity: {{label}}"
+  },
+  "language": {
+    "title": "Language",
+    "subtitle": "Choose the app language"
+  },
   "routine": {
     "title": "Quick routine",
     "subtitle": "Choose a duration and start right away.",
@@ -57,13 +57,297 @@
       "5min": { "title": "5 min · Focus", "subtitle": "Box breathing + forest" },
       "10min": { "title": "10 min · Sleep", "subtitle": "Sleep breathing + waves" }
     }
+  },
+  "breathing": {
+    "title": "Breathing Exercise",
+    "subtitle": "Follow the visual guide to practice mindful breathing. Choose the mode that fits you today.",
+    "modes": {
+      "calma": { "title": "Calm (4–4–6)", "subtitle": "Slow down and return to center." },
+      "antiestres": { "title": "Anti-stress (4–2–6)", "subtitle": "Quick and effective when you feel rushed." },
+      "cuadrada": { "title": "Box (4–4–4–4)", "subtitle": "Balance, focus and stabilize." },
+      "suave": { "title": "Gentle (3–1–5)", "subtitle": "Great to start if you’re a beginner." },
+      "sueno": { "title": "Sleep (4–0–8)", "subtitle": "Longer exhale to release tension and sleep better." }
+    },
+    "ambient": {
+      "title": "Ambient sound",
+      "suggested": "Suggested:",
+      "rain": "Rain",
+      "waves": "Waves",
+      "forest": "Forest"
+    },
+    "totalTime": {
+      "title": "Total time",
+      "five": "5 min",
+      "ten": "10 min",
+      "free": "Free",
+      "elapsed": "Time",
+      "remaining": "Left"
+    },
+    "controls": {
+      "start": "Start",
+      "pause": "Pause",
+      "reset": "Reset"
+    },
+    "phase": {
+      "ready": "Ready",
+      "startsIn": "Starts in",
+      "inhale": "Inhale",
+      "hold": "Hold",
+      "exhale": "Exhale",
+      "rest": "Rest",
+      "paused": "Paused"
+    },
+    "stats": {
+      "breaths": "Breaths",
+      "cycle": "Cycle"
+    },
+    "hint": "Tip: if you feel tense, try a longer exhale (e.g., 4–0–8).",
+    "modal": {
+      "title": "Choose a mode"
+    }
+  },
+  "sos": {
+    "title": "SOS 60s",
+    "subtitle": "Quick shortcuts to get back to calm.",
+    "notFound": "Exercise not found.",
+    "detailSubtitle": "One minute. One step.",
+    "goBreathing": "Go to Breathing",
+    "goSounds": "Go to Sounds",
+    "suggestion": {
+      "single": "Suggestion: {{a}}",
+      "combo": "Suggestion: {{a}} + {{b}}"
+    },
+    "usedTimes": "Used {{count}} time",
+    "usedTimes_plural": "Used {{count}} times",
+    "items": {
+      "anxiety": {
+        "title": "Lower anxiety",
+        "subtitle": "When it spikes suddenly",
+        "detailTitle": "Lower anxiety (60s)",
+        "steps": [
+          "1) Relax your shoulders and jaw.",
+          "2) Exhale long 3 times (as if fogging a mirror).",
+          "3) Breathe 4-2-6 for 6 cycles.",
+          "4) Name 5 things you can see."
+        ]
+      },
+      "overwhelmed": {
+        "title": "I’m overwhelmed",
+        "subtitle": "Too many things at once",
+        "detailTitle": "Reduce overwhelm (60s)",
+        "steps": [
+          "1) Write: ‘Right now I only have to…’",
+          "2) Pick 1 small task (max 5 min).",
+          "3) Choose 1 thing you can leave for tomorrow."
+        ]
+      },
+      "sleep": {
+        "title": "I can’t sleep",
+        "subtitle": "Calm mind and body",
+        "detailTitle": "Sleep better (60s)",
+        "steps": [
+          "1) Lower your screen brightness.",
+          "2) Exhale slowly for 8 seconds × 6 times.",
+          "3) Relax your tongue and forehead."
+        ]
+      },
+      "sad": {
+        "title": "I feel sad",
+        "subtitle": "Hold the low with kindness",
+        "detailTitle": "Sit with sadness (60s)",
+        "steps": [
+          "1) Place a hand on your chest and feel the contact.",
+          "2) Tell yourself: ‘This is hard, and I’m not alone in feeling this.’",
+          "3) Write: ‘Today I need…’."
+        ]
+      },
+      "focus": {
+        "title": "I need focus",
+        "subtitle": "Return to the task",
+        "detailTitle": "Focus (60s)",
+        "steps": [
+          "1) Breathe slowly 3 times.",
+          "2) Choose 1 micro-task (5 min).",
+          "3) Start without perfection. Just start."
+        ]
+      },
+      "body": {
+        "title": "Release the body",
+        "subtitle": "Tension in neck/shoulders",
+        "detailTitle": "Release tension (60s)",
+        "steps": [
+          "1) Lift shoulders for 3s and release for 6s (×3).",
+          "2) Clench fists for 3s and release for 6s (×3).",
+          "3) Gently turn your neck to both sides."
+        ]
+      }
+    }
+  },
+  "sounds": {
+    "title": "Nature Sounds",
+    "subtitle": "Sounds to sleep or relax.",
+    "loading": "Loading…",
+    "playing": "Playing",
+    "tapToPlay": "Tap to play",
+    "stop": "Stop",
+    "stopping": "Stopping…",
+    "items": {
+      "lluvia": { "title": "Rain" },
+      "olas": { "title": "Waves" },
+      "bosque": { "title": "Forest" },
+      "rio": { "title": "River" },
+      "tormenta": { "title": "Storm" }
+    }
+  },
+  "mindfulness": {
+    "title": "Mindfulness Prompts",
+    "subtitle": "Reflect with short prompts or do a quick exercise to return to the present.",
+
+    "tabs": {
+      "questions": "Questions",
+      "exercises": "Exercises"
+    },
+
+    "filter": {
+      "all": "All",
+      "favs": "Favorites"
+    },
+
+    "questionLabel": "Prompt",
+    "loading": "Loading…",
+
+    "controls": {
+      "prev": "Previous",
+      "next": "Next"
+    },
+
+    "tipQuestions": "Tip: if you get distracted, take one mindful breath and continue.",
+
+    "questions": {
+      "q01": "What activity makes you lose track of time? Why?",
+      "q02": "What small act of kindness can you do for someone today?",
+      "q03": "Think of a challenge you overcame. What did you learn from it?",
+      "q04": "What is something beautiful you noticed recently?",
+      "q05": "Describe a place where you feel completely at peace.",
+      "q06": "What quality do you admire in others that you also see in yourself?",
+      "q07": "What are three things you feel grateful for today?",
+      "q08": "Describe a sound you can hear right now. What does it make you think of?",
+      "q09": "What emotion is most present right now? (without judging it)",
+      "q10": "If your mind were a sky, what would it be like today: clear, cloudy, stormy…?",
+      "q11": "What part of your body feels most tense right now? Can you soften it by 5%?",
+      "q12": "What do you need today: rest, clarity, support, or movement?",
+      "q13": "What thought has been repeating lately? Does it help you or drain you?",
+      "q14": "What would your calmer self do in this situation?",
+      "q15": "What is the smallest thing you can do right now to care for yourself?",
+      "q16": "What are you trying to control too much?",
+      "q17": "What can you let go of today (an expectation, a rush, a comparison)?",
+      "q18": "What has been working lately, even if it’s something small?",
+      "q19": "Who brings you calm? What trait of theirs could you apply today?",
+      "q20": "What would you say to yourself if you were your best friend right now?",
+      "q21": "How would you like to feel at the end of the day? What tiny action moves you closer?",
+      "q22": "What are you avoiding? What would the easiest first step be?",
+      "q23": "What do you appreciate about your body today, even something simple?",
+      "q24": "What mental noise can you label as “just a thought”?",
+      "q25": "What is your energy asking for today: a pause or a push?",
+      "q26": "If you could turn down the volume on one thing today, what would it be?",
+      "q27": "What helps you feel safe when you’re nervous?",
+      "q28": "What can you do in 60 seconds to feel 1% better?",
+      "q29": "What part of the day is usually hardest? How could you soften it?",
+      "q30": "What have you been doing well that you don’t give yourself credit for?",
+      "q31": "What sensation do you notice in your chest right now? (warmth, pressure, emptiness…)",
+      "q32": "What is truly the most important thing today?",
+      "q33": "What would you do if you didn’t need to do it perfectly?",
+      "q34": "What helps you return to the present when your mind drifts?",
+      "q35": "What would you like to forgive yourself for today (even a little)?"
+    },
+
+    "exercises": {
+      "54321": {
+        "title": "5-4-3-2-1 (Anchor)",
+        "short": "Ease anxiety.",
+        "description": "Bring your attention to your senses to return to the present.",
+        "steps": [
+          { "title": "1/5 · 5 things", "text": "Look around and name 5 things you can see." },
+          { "title": "2/5 · 4 things", "text": "Name 4 things you can feel in your body (clothes, chair, air…)." },
+          { "title": "3/5 · 3 things", "text": "Listen and name 3 sounds (near or far)." },
+          { "title": "4/5 · 2 things", "text": "Notice 2 smells (or imagine 2 pleasant smells if there aren’t any)." },
+          { "title": "5/5 · 1 thing", "text": "Name 1 taste (or take a sip of water and describe it)." }
+        ],
+        "tip": "Go slowly. If you get distracted, return to the step you were on."
+      },
+      "escaneo": {
+        "title": "Short Body Scan",
+        "short": "Release tension.",
+        "description": "Scan your body and soften gently, without forcing.",
+        "steps": [
+          { "title": "1/5 · Face", "text": "Soften your jaw, tongue, and forehead by 5%." },
+          { "title": "2/5 · Shoulders", "text": "Lift them for 2s and release slowly for 5s." },
+          { "title": "3/5 · Chest", "text": "Notice your breathing without changing it for 3 cycles." },
+          { "title": "4/5 · Belly", "text": "Let your belly soften on the exhale. No pushing." },
+          { "title": "5/5 · Legs", "text": "Feel the weight of your legs and their support." }
+        ],
+        "tip": "It’s not about doing it perfectly. It’s about noticing and softening."
+      },
+      "micro": {
+        "title": "Micro-Meditation (2 min)",
+        "short": "A brief pause.",
+        "description": "Two minutes to reset: breathing + simple attention.",
+        "steps": [
+          { "title": "1/4 · Posture", "text": "Get comfortable. Drop your shoulders and soften your gaze." },
+          { "title": "2/4 · Breathing", "text": "Inhale 4s and exhale 6s, 6 times." },
+          { "title": "3/4 · Label", "text": "If a thought appears: “thinking”, then return to the breath." },
+          { "title": "4/4 · Close", "text": "Choose one small next action (1 step)." }
+        ],
+        "tip": "Less is more. The key is returning, not staying perfectly focused."
+      }
+    }
+  },
+  "meditations": {
+    "title": "Meditations",
+    "subtitle": "Guided sessions to relax",
+
+    "badges": {
+      "recommended": "Recommended",
+      "last": "Last",
+      "favorite": "Favorite"
+    },
+
+    "notFoundTitle": "Not found",
+    "notFoundSubtitle": "This session doesn’t exist.",
+
+    "player": {
+      "loadingAudio": "Loading audio…",
+      "stepsTitle": "Steps (tap to jump)",
+      "settingsTitle": "Settings",
+      "volume": "Volume"
+    },
+
+    "items": {
+      "meditacion": {
+        "title": "Guided meditation",
+        "description": "A gentle session to calm the mind and return to the present.",
+        "steps": [
+          { "title": "Preparation", "hint": "Get comfortable. Soften your shoulders and jaw." },
+          { "title": "Breathing", "hint": "Feel the breath in and out. Don’t force the rhythm." },
+          { "title": "Body", "hint": "Scan the body and release tension by 5% in each area." },
+          { "title": "Thoughts", "hint": "If a thought appears: “thinking”, then come back to the breath." },
+          { "title": "Soft closing", "hint": "Before you finish, choose one small intention for your day." }
+        ]
+      },
+      "relajacion": {
+        "title": "Guided relaxation",
+        "description": "Relax the body step by step and release built-up tension.",
+        "steps": [
+          { "title": "Settling in", "hint": "Find a stable, comfortable position. Let your body be supported." },
+          { "title": "Slow breathing", "hint": "Make the exhale a little longer to let go." },
+          { "title": "Relaxing the body", "hint": "Soften shoulders, neck, and hands. No rush." },
+          { "title": "Releasing tension", "hint": "Release what you can now. The rest can wait." },
+          { "title": "Ending / rest", "hint": "Stay for a few seconds, noticing calm before you finish." }
+        ]
+      }
+    }
   }
 
 
-  
-
 
 }
-
-
-

@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, StyleSheet, Pressable, Image, FlatList, ImageBackground } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
+
 
 import { colors } from "../../shared/theme/colors";
 import { screenStyles } from "../../shared/ui/screenStyles";
@@ -13,6 +15,7 @@ import {
 } from "./meditations.storage";
 
 export default function MeditationsScreen({ navigation }: any) {
+  const { t } = useTranslation();
   const [favs, setFavs] = useState<MeditationId[]>([]);
   const [last, setLast] = useState<MeditationId | null>(null);
 
@@ -52,7 +55,9 @@ export default function MeditationsScreen({ navigation }: any) {
 
         <View style={styles.cardBody}>
           <View style={styles.row}>
-            <Text style={styles.title}>{item.title}</Text>
+            <Text style={styles.title}>
+              {t(`meditations.items.${item.id}.title`, { defaultValue: item.title })}
+            </Text>
 
             {/* ✅ MUY IMPORTANTE: que NO dispare la navegación */}
             <Pressable
@@ -71,24 +76,26 @@ export default function MeditationsScreen({ navigation }: any) {
             </Pressable>
           </View>
 
-          <Text style={styles.desc}>{item.description}</Text>
+          <Text style={styles.desc}>
+            {t(`meditations.items.${item.id}.description`, { defaultValue: item.description })}
+          </Text>
 
           <View style={styles.badges}>
             {item.recommended ? (
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>Recomendada</Text>
+                <Text style={styles.badgeText}>{t("meditations.badges.recommended")}</Text>
               </View>
             ) : null}
 
             {isLast ? (
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>Última</Text>
+                <Text style={styles.badgeText}>{t("meditations.badges.last")}</Text>
               </View>
             ) : null}
 
             {isFav ? (
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>Favorita</Text>
+                <Text style={styles.badgeText}>{t("meditations.badges.favorite")}</Text>
               </View>
             ) : null}
           </View>
@@ -100,8 +107,8 @@ export default function MeditationsScreen({ navigation }: any) {
   return (
     <View style={screenStyles.container}>
       <View style={screenStyles.header}>
-        <Text style={screenStyles.title}>Meditaciones</Text>
-        <Text style={screenStyles.subtitle}>Sesiones guiadas para relajarte</Text>
+        <Text style={screenStyles.title}>{t("meditations.title")}</Text>
+        <Text style={screenStyles.subtitle}>{t("meditations.subtitle")}</Text>
       </View>
 
       <FlatList

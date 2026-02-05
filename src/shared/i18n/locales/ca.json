@@ -2,7 +2,6 @@
   "tabs": {
     "home": "Inici",
     "sos": "SOS",
-    "routine": "Rutina ràpida",
     "breathing": "Respirar",
     "mindfulness": "Atenció plena",
     "sounds": "Sons",
@@ -11,6 +10,7 @@
   },
   "nav": {
     "sos": "SOS",
+    "routine": "Rutina ràpida",
     "breathing": "Respiració",
     "mindfulness": "Atenció plena",
     "sounds": "Sons",
@@ -19,45 +19,334 @@
     "profile": "Perfil",
     "language": "Idioma"
   },
-  
   "home": {
     "tagline": "El teu espai de calma, pas a pas",
-
     "sosTitle": "SOS",
     "sosSub": "Ajuda ràpida per calmar-te ara",
-
     "routine": "Rutina ràpida",
-
     "tileBreathingTitle": "Respiració",
     "tileBreathingSub": "Exercicis guiats",
-
     "tileMindTitle": "Atenció plena",
     "tileMindSub": "Presència i focus",
-
     "tileSoundsTitle": "Sons",
     "tileSoundsSub": "Natura i relax",
-
     "tileMeditationsTitle": "Meditacions",
     "tileMeditationsSub": "Sessions guiades",
-
     "diaryTitle": "Diari",
     "diarySub": "Escriu i reflexiona amb ajuda"
   },
-
-
-  "language": { "title": "Idioma", "subtitle": "Tria l’idioma de l’app" },
-
-  
+  "profile": {
+    "title": "Perfil",
+    "subtitle": "El teu progrés.",
+    "yourName": "El teu nom",
+    "namePlaceholder": "Escriu el teu nom…",
+    "maxChars": "Màx {{count}} caràcters",
+    "streak": "🔥 Ratxa: {{days}} dies",
+    "totalCalm": "Temps total de calma: {{time}}",
+    "lastActivity": "Última activitat: {{label}}"
+  },
+  "language": {
+    "title": "Idioma",
+    "subtitle": "Tria l’idioma de l’app"
+  },
   "routine": {
     "title": "Rutina ràpida",
     "subtitle": "Tria una durada i comença al moment.",
     "items": {
       "2min": { "title": "2 min · Calma", "subtitle": "Respiració calma + pluja" },
       "5min": { "title": "5 min · Focus", "subtitle": "Respiració quadrada + bosc" },
-      "10min": { "title": "10 min · Son", "subtitle": "Respiració son + onades" }
+      "10min": { "title": "10 min · Son", "subtitle": "Respiració per dormir + onades" }
+    }
+  },
+  "breathing": {
+    "title": "Exercici de respiració",
+    "subtitle": "Segueix la guia visual per practicar la respiració conscient. Tria el mode que et vagi millor avui.",
+    "modes": {
+      "calma": { "title": "Calma (4–4–6)", "subtitle": "Per baixar revolucions i tornar al centre." },
+      "antiestres": { "title": "Antiestrès (4–2–6)", "subtitle": "Ràpida i efectiva quan vas accelerat." },
+      "cuadrada": { "title": "Quadrada (4–4–4–4)", "subtitle": "Equilibra, enfoca i estabilitza." },
+      "suave": { "title": "Suau (3–1–5)", "subtitle": "Ideal per començar si ets principiant." },
+      "sueno": { "title": "Son (4–0–8)", "subtitle": "Exhala més llarg per deixar anar tensió i dormir millor." }
+    },
+    "ambient": {
+      "title": "So ambient",
+      "suggested": "Suggerit:",
+      "rain": "Pluja",
+      "waves": "Onades",
+      "forest": "Bosc"
+    },
+    "totalTime": {
+      "title": "Temps total",
+      "five": "5 min",
+      "ten": "10 min",
+      "free": "Lliure",
+      "elapsed": "Temps",
+      "remaining": "Queden"
+    },
+    "controls": {
+      "start": "Començar",
+      "pause": "Pausar",
+      "reset": "Reiniciar"
+    },
+    "phase": {
+      "ready": "A punt",
+      "startsIn": "Comença en",
+      "inhale": "Inhala",
+      "hold": "Mantén",
+      "exhale": "Exhala",
+      "rest": "Pausa",
+      "paused": "Pausat"
+    },
+    "stats": {
+      "breaths": "Respiracions",
+      "cycle": "Cicle"
+    },
+    "hint": "Consell: si estàs tens, prova d’exhalar més llarg (per exemple 4–0–8).",
+    "modal": {
+      "title": "Tria un mode"
+    }
+  },
+  "sos": {
+    "title": "SOS 60s",
+    "subtitle": "Accessos ràpids per tornar a la calma.",
+    "notFound": "No s’ha trobat l’exercici.",
+    "detailSubtitle": "Un minut. Un pas.",
+    "goBreathing": "Anar a Respiració",
+    "goSounds": "Anar a Sons",
+    "suggestion": {
+      "single": "Suggeriment: {{a}}",
+      "combo": "Suggeriment: {{a}} + {{b}}"
+    },
+    "usedTimes": "Usat {{count}} vegada",
+    "usedTimes_plural": "Usat {{count}} vegades",
+    "items": {
+      "anxiety": {
+        "title": "Baixar l’ansietat",
+        "subtitle": "Quan puja de cop",
+        "detailTitle": "Baixar l’ansietat (60s)",
+        "steps": [
+          "1) Relaxa espatlles i mandíbula.",
+          "2) Exhala llarg 3 vegades (com si entelassis un mirall).",
+          "3) Respira 4-2-6 durant 6 cicles.",
+          "4) Anomena 5 coses que veus."
+        ]
+      },
+      "overwhelmed": {
+        "title": "Estic aclaparat/da",
+        "subtitle": "Massa coses alhora",
+        "detailTitle": "Baixar l’aclaparament (60s)",
+        "steps": [
+          "1) Escriu: ‘Ara mateix només he de…’",
+          "2) Tria 1 tasca petita (màx 5 min).",
+          "3) Tria 1 cosa que pots deixar per demà."
+        ]
+      },
+      "sleep": {
+        "title": "Em costa dormir",
+        "subtitle": "Calmar ment i cos",
+        "detailTitle": "Dormir millor (60s)",
+        "steps": [
+          "1) Abaixa la llum de la pantalla.",
+          "2) Exhala lent 8 segons × 6 vegades.",
+          "3) Relaxa la llengua i el front."
+        ]
+      },
+      "sad": {
+        "title": "Em sento trist/a",
+        "subtitle": "Sostenir el baix amb estima",
+        "detailTitle": "Acompanyar la tristesa (60s)",
+        "steps": [
+          "1) Mà al pit i nota el contacte.",
+          "2) Digues: ‘Això és difícil, i no estic sol/a en sentir-ho’.",
+          "3) Escriu: ‘Avui necessito…’."
+        ]
+      },
+      "focus": {
+        "title": "Necessito focus",
+        "subtitle": "Tornar a la tasca",
+        "detailTitle": "Enfocar (60s)",
+        "steps": [
+          "1) Respira lent 3 vegades.",
+          "2) Tria 1 micro-tasca (5 min).",
+          "3) Comença sense perfecció. Només comença."
+        ]
+      },
+      "body": {
+        "title": "Deixar anar el cos",
+        "subtitle": "Tensió a coll/espatlles",
+        "detailTitle": "Alliberar tensió (60s)",
+        "steps": [
+          "1) Puja espatlles 3s i deixa anar 6s (×3).",
+          "2) Estreny els punys 3s i deixa anar 6s (×3).",
+          "3) Gira el coll suaument a banda i banda."
+        ]
+      }
+    }
+  },
+  "sounds": {
+    "title": "Sons de la Natura",
+    "subtitle": "Sons per dormir o relaxar-te.",
+    "loading": "Carregant…",
+    "playing": "Reproduint",
+    "tapToPlay": "Toca per reproduir",
+    "stop": "Aturar",
+    "stopping": "Aturant…",
+    "items": {
+      "lluvia": { "title": "Pluja" },
+      "olas": { "title": "Onades" },
+      "bosque": { "title": "Bosc" },
+      "rio": { "title": "Riu" },
+      "tormenta": { "title": "Tempesta" }
+    }
+  },
+  "mindfulness": {
+    "title": "Preguntes d’Atenció Plena",
+    "subtitle": "Reflexiona amb preguntes breus o fes un exercici ràpid per tornar al present.",
+
+    "tabs": {
+      "questions": "Preguntes",
+      "exercises": "Exercicis"
+    },
+
+    "filter": {
+      "all": "Totes",
+      "favs": "Favorites"
+    },
+
+    "questionLabel": "Pregunta",
+    "loading": "Carregant…",
+
+    "controls": {
+      "prev": "Anterior",
+      "next": "Següent"
+    },
+
+    "tipQuestions": "Tip: si et distreus, fes una respiració conscient i reprèn.",
+
+    "questions": {
+      "q01": "Quina activitat et fa perdre la noció del temps? Per què?",
+      "q02": "Quin petit acte d’amabilitat pots fer per algú avui?",
+      "q03": "Pensa en un repte que vas superar. Què en vas aprendre?",
+      "q04": "Què és una cosa bonica que hagis notat recentment?",
+      "q05": "Descriu un lloc on et sentis completament en pau.",
+      "q06": "Quina qualitat admires dels altres que també veus en tu?",
+      "q07": "Quines són tres coses per les quals estàs agraït/da avui?",
+      "q08": "Descriu un so que escoltis ara mateix. Què et fa pensar?",
+      "q09": "Quina emoció és més present ara mateix? (sense jutjar-la)",
+      "q10": "Si la teva ment fos un cel, com estaria avui: serè, ennuvolat, amb tempesta…?",
+      "q11": "Quina part del teu cos està més tensa ara? Pots afluixar un 5%?",
+      "q12": "Què necessites avui: descans, claredat, suport o moviment?",
+      "q13": "Quin pensament es repeteix últimament? T’ajuda o t’esgota?",
+      "q14": "Què faria el teu “jo” més calmat en aquesta situació?",
+      "q15": "Quina és la cosa més petita que pots fer ara per cuidar-te?",
+      "q16": "Què és una cosa que estàs intentant controlar massa?",
+      "q17": "Què pots deixar anar avui (una expectativa, una pressa, una comparació)?",
+      "q18": "Què t’està funcionant últimament, encara que sigui una cosa petita?",
+      "q19": "Quina persona et porta calma? Quin tret seu podries aplicar avui?",
+      "q20": "Què et diries si fossis la teva millor amiga ara mateix?",
+      "q21": "Com t’agradaria sentir-te al final del dia? Quina acció mínima t’hi acosta?",
+      "q22": "Què estàs evitant? Quin seria el primer pas més fàcil?",
+      "q23": "Què agraeixes del teu cos avui, encara que sigui una cosa simple?",
+      "q24": "Quin soroll mental pots etiquetar com ‘només un pensament’?",
+      "q25": "Què et demana la teva energia avui: pausa o impuls?",
+      "q26": "Si poguessis baixar el volum d’una cosa avui, quina seria?",
+      "q27": "Què et dona seguretat quan estàs nerviós/osa?",
+      "q28": "Què pots fer en 60 segons per sentir-te un 1% millor?",
+      "q29": "Quina part del dia sol ser més difícil? Com la podries suavitzar?",
+      "q30": "Què has estat fent bé i no t’ho reconeixes?",
+      "q31": "Quina sensació notes al pit ara mateix? (calor, pressió, buit…)",
+      "q32": "Què és el més important d’avui, de debò?",
+      "q33": "Què faries si no necessitessis fer-ho perfecte?",
+      "q34": "Què t’ajuda a tornar al present quan la ment se’n va?",
+      "q35": "Què t’agradaria perdonar-te avui (encara que sigui una mica)?"
+    },
+
+    "exercises": {
+      "54321": {
+        "title": "5-4-3-2-1 (Ancoratge)",
+        "short": "Baixa l’ansietat.",
+        "description": "Porta l’atenció als sentits per tornar al present.",
+        "steps": [
+          { "title": "1/5 · 5 coses", "text": "Mira al teu voltant i anomena 5 coses que puguis veure." },
+          { "title": "2/5 · 4 coses", "text": "Anomena 4 coses que puguis sentir al cos (roba, cadira, aire…)." },
+          { "title": "3/5 · 3 coses", "text": "Escolta i anomena 3 sons (propers o llunyans)." },
+          { "title": "4/5 · 2 coses", "text": "Nota 2 olors (o imagina 2 olors agradables si no n’hi ha)." },
+          { "title": "5/5 · 1 cosa", "text": "Anomena 1 gust (o fes un glop d’aigua i descriu-lo)." }
+        ],
+        "tip": "Fes-ho sense pressa. Si et distreus, torna al pas on eres."
+      },
+      "escaneo": {
+        "title": "Escaneig corporal curt",
+        "short": "Allibera tensió.",
+        "description": "Recorre el cos i afluixa de manera suau, sense forçar.",
+        "steps": [
+          { "title": "1/5 · Cara", "text": "Afluixa la mandíbula, la llengua i el front un 5%." },
+          { "title": "2/5 · Espatlles", "text": "Puja-les 2s i deixa-les anar lent 5s." },
+          { "title": "3/5 · Pit", "text": "Observa la respiració sense canviar-la durant 3 cicles." },
+          { "title": "4/5 · Abdomen", "text": "Relaxa el ventre en exhalar. Sense empènyer." },
+          { "title": "5/5 · Cames", "text": "Sent el pes de les cames i el seu suport." }
+        ],
+        "tip": "No és ‘fer-ho perfecte’. És notar i suavitzar."
+      },
+      "micro": {
+        "title": "Micro-meditació (2 min)",
+        "short": "Pausa breu.",
+        "description": "Dos minuts per reiniciar: respiració + atenció simple.",
+        "steps": [
+          { "title": "1/4 · Postura", "text": "Posa’t còmode. Deixa anar les espatlles i mira suau." },
+          { "title": "2/4 · Respiració", "text": "Inhala 4s i exhala 6s, 6 vegades." },
+          { "title": "3/4 · Etiquetar", "text": "Si apareix un pensament: ‘pensant’ i torna a respirar." },
+          { "title": "4/4 · Tancament", "text": "Tria una acció petita per continuar (1 pas)." }
+        ],
+        "tip": "Menys és més. L’important és tornar-hi, no quedar-s’hi perfecte."
+      }
+    }
+  },
+  "meditations": {
+    "title": "Meditacions",
+    "subtitle": "Sessions guiades per relaxar-te",
+
+    "badges": {
+      "recommended": "Recomanada",
+      "last": "Última",
+      "favorite": "Preferida"
+    },
+
+    "notFoundTitle": "No trobada",
+    "notFoundSubtitle": "Aquesta sessió no existeix.",
+
+    "player": {
+      "loadingAudio": "Carregant l’àudio…",
+      "stepsTitle": "Passos (toca per saltar)",
+      "settingsTitle": "Ajustos",
+      "volume": "Volum"
+    },
+
+    "items": {
+      "meditacion": {
+        "title": "Meditació guiada",
+        "description": "Una sessió suau per calmar la ment i tornar al present.",
+        "steps": [
+          { "title": "Preparació", "hint": "Posa’t còmode/a. Afluixa espatlles i mandíbula." },
+          { "title": "Respiració", "hint": "Nota l’aire entrant i sortint. No forcis el ritme." },
+          { "title": "Cos", "hint": "Recorre el cos i deixa anar tensió un 5% a cada zona." },
+          { "title": "Pensaments", "hint": "Si apareix un pensament: “pensant”, i torna a la respiració." },
+          { "title": "Tancament suau", "hint": "Abans d’acabar, tria una intenció petita per al teu dia." }
+        ]
+      },
+      "relajacion": {
+        "title": "Relaxació guiada",
+        "description": "Relaxa el cos a poc a poc i deixa anar tensió acumulada.",
+        "steps": [
+          { "title": "Acomodar-te", "hint": "Busca una postura estable i còmoda. Deixa’t sostenir." },
+          { "title": "Respiració lenta", "hint": "Exhala una mica més llarg per deixar anar tensió." },
+          { "title": "Relaxar el cos", "hint": "Afluixa espatlles, coll i mans. Sense pressa." },
+          { "title": "Deixar anar tensió", "hint": "Deixa anar el que puguis ara. La resta pot esperar." },
+          { "title": "Final / descans", "hint": "Queda’t uns segons notant calma abans d’acabar." }
+        ]
+      }
     }
   }
-
 
 
 

@@ -8,7 +8,7 @@
     "meditations": "Meditaciones",
     "journal": "Diario"
   },
-   "nav": {
+  "nav": {
     "sos": "SOS",
     "routine": "Rutina rápida",
     "breathing": "Respiración",
@@ -49,7 +49,6 @@
     "title": "Idioma",
     "subtitle": "Elige el idioma de la app"
   },
-  
   "routine": {
     "title": "Rutina rápida",
     "subtitle": "Elige una duración y empieza al momento.",
@@ -59,42 +58,295 @@
       "10min": { "title": "10 min · Sueño", "subtitle": "Respiración sueño + olas" }
     }
   },
-
-
   "breathing": {
     "title": "Ejercicio de Respiración",
     "subtitle": "Sigue la guía visual para practicar la respiración consciente. Elige el modo que más te encaje hoy.",
-    "ambientTitle": "Sonido ambiente",
-    "ambientSuggested": "Sugerido: {{name}}",
-    "totalTime": "Tiempo total",
-    "time": "Tiempo: {{time}}",
-    "remaining": "Quedan: {{time}}",
-    "start": "Comenzar",
-    "pause": "Pausar",
-    "reset": "Reiniciar",
-    "modes": "Elige un modo",
-    "phase": {
-      "ready": "Listo",
-      "startsIn": "Empieza en {{n}}",
-      "inhale": "Inhala · {{s}}s",
-      "hold": "Mantén · {{s}}s",
-      "exhale": "Exhala · {{s}}s",
-      "rest": "Pausa · {{s}}s",
-      "paused": "Pausado"
+    "modes": {
+      "calma": { "title": "Calma (4–4–6)", "subtitle": "Para bajar revoluciones y volver al centro." },
+      "antiestres": { "title": "Anti-estrés (4–2–6)", "subtitle": "Rápida y efectiva cuando estás acelerado." },
+      "cuadrada": { "title": "Cuadrada (4–4–4–4)", "subtitle": "Equilibra, enfoca y estabiliza." },
+      "suave": { "title": "Suave (3–1–5)", "subtitle": "Ideal para empezar si eres principiante." },
+      "sueno": { "title": "Sueño (4–0–8)", "subtitle": "Exhala más largo para soltar tensión y dormir mejor." }
     },
-    "big": {
-      "paused": "Pausado",
-      "inhale": "Inhala",
-      "hold": "Mantén",
-      "exhale": "Exhala",
-      "rest": "Pausa"
-    },
-    "hint": "Consejo: si estás tenso, prueba exhalar más largo (por ejemplo 4–0–8).",
-    "counter": "Respiraciones: {{n}} · Ciclo: {{s}}s",
     "ambient": {
+      "title": "Sonido ambiente",
+      "suggested": "Sugerido:",
       "rain": "Lluvia",
       "waves": "Olas",
       "forest": "Bosque"
+    },
+    "totalTime": {
+      "title": "Tiempo total",
+      "five": "5 min",
+      "ten": "10 min",
+      "free": "Libre",
+      "elapsed": "Tiempo",
+      "remaining": "Quedan"
+    },
+    "controls": {
+      "start": "Comenzar",
+      "pause": "Pausar",
+      "reset": "Reiniciar"
+    },
+    "phase": {
+      "ready": "Listo",
+      "startsIn": "Empieza en",
+      "inhale": "Inhala",
+      "hold": "Mantén",
+      "exhale": "Exhala",
+      "rest": "Pausa",
+      "paused": "Pausado"
+    },
+    "stats": {
+      "breaths": "Respiraciones",
+      "cycle": "Ciclo"
+    },
+    "hint": "Consejo: si estás tenso, prueba exhalar más largo (por ejemplo 4–0–8).",
+    "modal": {
+      "title": "Elige un modo"
+    }
+  },
+  "sos": {
+    "title": "SOS 60s",
+    "subtitle": "Accesos rápidos para volver a la calma.",
+    "notFound": "No se encontró el ejercicio.",
+    "detailSubtitle": "Un minuto. Un paso.",
+    "goBreathing": "Ir a Respiración",
+    "goSounds": "Ir a Sonidos",
+    "suggestion": {
+      "single": "Sugerencia: {{a}}",
+      "combo": "Sugerencia: {{a}} + {{b}}"
+    },
+    "usedTimes": "Usado {{count}} vez",
+    "usedTimes_plural": "Usado {{count}} veces",
+    "items": {
+      "anxiety": {
+        "title": "Bajar ansiedad",
+        "subtitle": "Para cuando te sube de golpe",
+        "detailTitle": "Bajar ansiedad (60s)",
+        "steps": [
+          "1) Suelta hombros y mandíbula.",
+          "2) Exhala largo 3 veces (como si empañaras un cristal).",
+          "3) Respira 4-2-6 durante 6 ciclos.",
+          "4) Nombra 5 cosas que ves."
+        ]
+      },
+      "overwhelmed": {
+        "title": "Estoy agobiada",
+        "subtitle": "Demasiadas cosas a la vez",
+        "detailTitle": "Bajar el agobio (60s)",
+        "steps": [
+          "1) Escribe: ‘Ahora mismo solo tengo que…’",
+          "2) Elige 1 tarea pequeña (máx 5 min).",
+          "3) Elige 1 cosa que puedes dejar para mañana."
+        ]
+      },
+      "sleep": {
+        "title": "Me cuesta dormir",
+        "subtitle": "Calmar mente y cuerpo",
+        "detailTitle": "Dormir mejor (60s)",
+        "steps": [
+          "1) Baja la luz de la pantalla.",
+          "2) Exhala lento 8 segundos x 6 veces.",
+          "3) Relaja lengua y frente."
+        ]
+      },
+      "sad": {
+        "title": "Me siento triste",
+        "subtitle": "Sostener el bajón con cariño",
+        "detailTitle": "Acompañar la tristeza (60s)",
+        "steps": [
+          "1) Mano en el pecho y nota el contacto.",
+          "2) Dite: ‘Esto es difícil, y no estoy sola en sentirlo’.",
+          "3) Escribe: ‘Hoy necesito…’."
+        ]
+      },
+      "focus": {
+        "title": "Necesito foco",
+        "subtitle": "Volver a la tarea",
+        "detailTitle": "Enfocar (60s)",
+        "steps": [
+          "1) Respira 3 veces lento.",
+          "2) Elige 1 micro-tarea (5 min).",
+          "3) Empieza sin perfección. Solo empezar."
+        ]
+      },
+      "body": {
+        "title": "Soltar el cuerpo",
+        "subtitle": "Tensión en cuello/hombros",
+        "detailTitle": "Soltar tensión (60s)",
+        "steps": [
+          "1) Sube hombros 3s y suelta 6s (x3).",
+          "2) Aprieta puños 3s y suelta 6s (x3).",
+          "3) Gira cuello suave a ambos lados."
+        ]
+      }
+    }
+  },
+  "sounds": {
+    "title": "Sonidos Naturaleza",
+    "subtitle": "Sonidos para dormir o relajarte.",
+    "loading": "Cargando…",
+    "playing": "Reproduciendo",
+    "tapToPlay": "Tocar para reproducir",
+    "stop": "Detener",
+    "stopping": "Deteniendo…",
+    "items": {
+      "lluvia": { "title": "Lluvia" },
+      "olas": { "title": "Olas" },
+      "bosque": { "title": "Bosque" },
+      "rio": { "title": "Río" },
+      "tormenta": { "title": "Tormenta" }
+    }
+  },
+  "mindfulness": {
+    "title": "Preguntas de Atención Plena",
+    "subtitle": "Reflexiona con preguntas breves o haz un ejercicio rápido para volver al presente.",
+
+    "tabs": {
+      "questions": "Preguntas",
+      "exercises": "Ejercicios"
+    },
+
+    "filter": {
+      "all": "Todas",
+      "favs": "Favoritas"
+    },
+
+    "questionLabel": "Pregunta",
+    "loading": "Cargando…",
+
+    "controls": {
+      "prev": "Anterior",
+      "next": "Siguiente"
+    },
+
+    "tipQuestions": "Tip: si te distraes, vuelve a la respiración 1 vez y retoma.",
+
+    "questions": {
+      "q01": "¿Qué actividad te hace perder la noción del tiempo? ¿Por qué?",
+      "q02": "¿Cuál es un pequeño acto de amabilidad que puedes hacer por alguien hoy?",
+      "q03": "Piensa en un desafío que superaste. ¿Qué aprendiste de él?",
+      "q04": "¿Qué es algo hermoso que notaste recientemente?",
+      "q05": "Describe un lugar donde te sientas completamente en paz.",
+      "q06": "¿Qué cualidad admiras en los demás que también ves en ti?",
+      "q07": "¿Cuáles son tres cosas por las que estás agradecido/a hoy?",
+      "q08": "Describe un sonido que escuches ahora mismo. ¿Qué te hace pensar?",
+      "q09": "¿Qué emoción está más presente ahora mismo? (sin juzgarla)",
+      "q10": "Si tu mente fuera un cielo, ¿cómo estaría hoy: despejado, nublado, con tormenta…?",
+      "q11": "¿Qué parte de tu cuerpo está más tensa ahora? ¿Puedes aflojar un 5%?",
+      "q12": "¿Qué necesitas hoy: descanso, claridad, apoyo o movimiento?",
+      "q13": "¿Qué pensamiento se repite últimamente? ¿Te ayuda o te drena?",
+      "q14": "¿Qué haría tu “yo” más calmado en esta situación?",
+      "q15": "¿Qué es lo más pequeño que puedes hacer ahora para cuidarte?",
+      "q16": "¿Qué es algo que estás intentando controlar demasiado?",
+      "q17": "¿Qué puedes soltar hoy (una expectativa, una prisa, una comparación)?",
+      "q18": "¿Qué te está funcionando últimamente, aunque sea algo pequeño?",
+      "q19": "¿Qué persona te aporta calma? ¿Qué rasgo suyo podrías aplicar hoy?",
+      "q20": "¿Qué te dirías si fueras tu mejor amiga ahora mismo?",
+      "q21": "¿Qué te gustaría sentir al final del día? ¿Qué acción mínima te acerca?",
+      "q22": "¿Qué estás evitando? ¿Cuál sería el primer paso más fácil?",
+      "q23": "¿Qué agradeces de tu cuerpo hoy, aunque sea algo simple?",
+      "q24": "¿Qué ruido mental puedes etiquetar como ‘solo un pensamiento’?",
+      "q25": "¿Qué te está pidiendo tu energía hoy: pausa o impulso?",
+      "q26": "Si pudieras bajar el volumen de una cosa hoy, ¿cuál sería?",
+      "q27": "¿Qué te da seguridad cuando estás nervioso/a?",
+      "q28": "¿Qué puedes hacer en 60 segundos para sentirte 1% mejor?",
+      "q29": "¿Qué parte del día suele ser más difícil? ¿Cómo podrías suavizarla?",
+      "q30": "¿Qué has estado haciendo bien que no te reconoces?",
+      "q31": "¿Qué sensación notas en tu pecho ahora mismo? (calor, presión, vacío…)",
+      "q32": "¿Qué es lo más importante de hoy, de verdad?",
+      "q33": "¿Qué harías si no necesitaras hacerlo perfecto?",
+      "q34": "¿Qué te ayuda a volver al presente cuando te vas con la mente?",
+      "q35": "¿Qué te gustaría perdonarte hoy (aunque sea un poquito)?"
+    },
+
+    "exercises": {
+      "54321": {
+        "title": "5-4-3-2-1 (Anclaje)",
+        "short": "Baja ansiedad.",
+        "description": "Trae tu atención a los sentidos para volver al presente.",
+        "steps": [
+          { "title": "1/5 · 5 cosas", "text": "Mira a tu alrededor y nombra 5 cosas que puedas ver." },
+          { "title": "2/5 · 4 cosas", "text": "Nombra 4 cosas que puedas sentir en tu cuerpo (ropa, silla, aire…)." },
+          { "title": "3/5 · 3 cosas", "text": "Escucha y nombra 3 sonidos (cercanos o lejanos)." },
+          { "title": "4/5 · 2 cosas", "text": "Nota 2 olores (o imagina 2 olores agradables si no hay)." },
+          { "title": "5/5 · 1 cosa", "text": "Nombra 1 sabor (o toma un sorbo de agua y descríbelo)." }
+        ],
+        "tip": "Hazlo sin prisa. Si te distraes, vuelve al paso en el que estabas."
+      },
+      "escaneo": {
+        "title": "Escaneo corporal corto",
+        "short": "Suelta tensión.",
+        "description": "Recorre el cuerpo y afloja de forma suave, sin forzar.",
+        "steps": [
+          { "title": "1/5 · Cara", "text": "Afloja mandíbula, lengua y entrecejo un 5%." },
+          { "title": "2/5 · Hombros", "text": "Súbelos 2s y suéltalos lento 5s." },
+          { "title": "3/5 · Pecho", "text": "Nota la respiración sin cambiarla durante 3 ciclos." },
+          { "title": "4/5 · Abdomen", "text": "Relaja el vientre al exhalar. Sin empujar." },
+          { "title": "5/5 · Piernas", "text": "Siente el peso de las piernas y su apoyo." }
+        ],
+        "tip": "No es ‘hacerlo perfecto’. Es notar y suavizar."
+      },
+      "micro": {
+        "title": "Micro-meditación (2 min)",
+        "short": "Pausa breve.",
+        "description": "Dos minutos para resetear: respiración + atención simple.",
+        "steps": [
+          { "title": "1/4 · Postura", "text": "Colócate cómodo/a. Suelta hombros y mira suave." },
+          { "title": "2/4 · Respiración", "text": "Inhala 4s y exhala 6s, 6 veces." },
+          { "title": "3/4 · Etiquetar", "text": "Si aparece un pensamiento: ‘pensando’ y vuelve a respirar." },
+          { "title": "4/4 · Cierre", "text": "Elige una acción pequeña para seguir (1 paso)." }
+        ],
+        "tip": "Menos es más. Lo importante es volver, no quedarse."
+      }
+    }
+  },
+  "meditations": {
+    "title": "Meditaciones",
+    "subtitle": "Sesiones guiadas para relajarte",
+
+    "badges": {
+      "recommended": "Recomendada",
+      "last": "Última",
+      "favorite": "Favorita"
+    },
+
+    "notFoundTitle": "No encontrada",
+    "notFoundSubtitle": "Esta sesión no existe.",
+
+    "player": {
+      "loadingAudio": "Cargando audio…",
+      "stepsTitle": "Pasos (toca para saltar)",
+      "settingsTitle": "Ajustes",
+      "volume": "Volumen"
+    },
+
+    "items": {
+      "meditacion": {
+        "title": "Meditación guiada",
+        "description": "Una sesión suave para calmar la mente y volver al presente.",
+        "steps": [
+          { "title": "Preparación", "hint": "Colócate cómodo/a. Suelta hombros y mandíbula." },
+          { "title": "Respiración", "hint": "Siente el aire entrar y salir. No fuerces el ritmo." },
+          { "title": "Cuerpo", "hint": "Recorre el cuerpo y afloja tensión un 5% en cada zona." },
+          { "title": "Pensamientos", "hint": "Si aparece un pensamiento: “pensando” y vuelve a la respiración." },
+          { "title": "Cierre suave", "hint": "Antes de volver, elige una intención pequeña para tu día." }
+        ]
+      },
+      "relajacion": {
+        "title": "Relajación guiada",
+        "description": "Relaja el cuerpo poco a poco y suelta tensión acumulada.",
+        "steps": [
+          { "title": "Acomodarte", "hint": "Busca una postura estable y cómoda. Apoya bien el cuerpo." },
+          { "title": "Respiración lenta", "hint": "Exhala un poco más largo para soltar tensión." },
+          { "title": "Relajar cuerpo", "hint": "Afloja hombros, cuello y manos. Sin prisa." },
+          { "title": "Soltar tensión", "hint": "Suelta lo que puedas ahora. Lo demás puede esperar." },
+          { "title": "Final / descanso", "hint": "Quédate unos segundos notando calma antes de terminar." }
+        ]
+      }
     }
   }
+
+
 }

@@ -4,6 +4,10 @@ import Slider from "@react-native-community/slider";
 import { Audio } from "expo-av";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
+import i18n from "../../shared/i18n/i18n";
+
+
 
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { colors } from "../../shared/theme/colors";
@@ -23,6 +27,8 @@ function clamp(n: number, min: number, max: number) {
 }
 
 export default function MeditationPlayerScreen({ route }: any) {
+    const { t } = useTranslation();
+
   const { id } = route.params as { id: "meditacion" | "relajacion" };
 
   const session: MeditationSession | undefined = useMemo(
@@ -213,8 +219,8 @@ export default function MeditationPlayerScreen({ route }: any) {
   if (!session) {
     return (
       <View style={screenStyles.container}>
-        <Text style={screenStyles.title}>No encontrada</Text>
-        <Text style={screenStyles.subtitle}>Esta sesión no existe.</Text>
+        <Text style={screenStyles.title}>{t("meditations.notFoundTitle")}</Text>
+        <Text style={screenStyles.subtitle}>{t("meditations.notFoundSubtitle")}</Text>
       </View>
     );
   }
@@ -231,8 +237,12 @@ export default function MeditationPlayerScreen({ route }: any) {
         <View style={styles.overlay} />
 
         <View style={styles.heroText}>
-          <Text style={styles.heroTitle}>{session.title}</Text>
-          <Text style={styles.heroSub}>{session.description}</Text>
+          <Text style={styles.heroTitle}>
+          {t(`meditations.items.${session.id}.title`, { defaultValue: session.title })}
+        </Text>
+          <Text style={styles.heroSub}>
+          {t(`meditations.items.${session.id}.description`, { defaultValue: session.description })}
+        </Text>
 
           {/* Barra + tiempos */}
           <View style={styles.sliderWrap}>
@@ -298,12 +308,12 @@ export default function MeditationPlayerScreen({ route }: any) {
             </Pressable>
           </View>
 
-          {!isLoaded ? <Text style={styles.loadingHint}>Cargando audio…</Text> : null}
+          {!isLoaded ? <Text style={styles.loadingHint}>{t("meditations.player.loadingAudio")}</Text> : null}
         </View>
       </View>
 
       <View style={{ height: 14 }} />
-      <Text style={styles.stepsTitle}>Pasos (toca para saltar)</Text>
+      <Text style={styles.stepsTitle}>{t("meditations.player.stepsTitle")}</Text>
 
       <FlatList
         data={session.steps}
@@ -312,6 +322,10 @@ export default function MeditationPlayerScreen({ route }: any) {
         renderItem={({ item, index }) => {
           const active = index === activeStepIndex;
           const stepDuration = mmss(item.toSec - item.fromSec);
+          const hintKey = `meditations.items.${session.id}.steps.${index}.hint`;
+          const hintText = i18n.exists(hintKey) ? t(hintKey) : "";
+
+
 
           return (
             <View>
@@ -326,16 +340,16 @@ export default function MeditationPlayerScreen({ route }: any) {
                 <View style={styles.stepRow}>
                   <View style={[styles.stepDot, active && styles.stepDotActive]} />
                   <Text style={[styles.stepText, active && styles.stepTextActive]}>
-                    {item.title}
+                    {t(`meditations.items.${session.id}.steps.${index}.title`, { defaultValue: item.title })}
                   </Text>
                   <Text style={styles.stepTime}>{stepDuration}</Text>
                 </View>
               </Pressable>
 
               {/* ✅ Caja resumen SOLO bajo el paso activo */}
-              {active && item.hint ? (
+              {active && hintText ? (
                 <View style={styles.stepHintBox}>
-                  <Text style={styles.stepHintText}>{item.hint}</Text>
+                  <Text style={styles.stepHintText}>{hintText}</Text>
                 </View>
               ) : null}
             </View>
@@ -347,8 +361,8 @@ export default function MeditationPlayerScreen({ route }: any) {
       <Modal visible={settingsOpen} transparent animationType="fade" onRequestClose={() => setSettingsOpen(false)}>
         <Pressable style={styles.modalBackdrop} onPress={() => setSettingsOpen(false)}>
           <Pressable style={styles.modalCard} onPress={() => {}}>
-            <Text style={styles.modalTitle}>Ajustes</Text>
-            <Text style={styles.modalLabel}>Volumen</Text>
+            <Text style={styles.modalTitle}>{t("meditations.player.settingsTitle")}</Text>
+            <Text style={styles.modalLabel}>{t("meditations.player.volume")}</Text>
 
             <Slider
               value={volume}

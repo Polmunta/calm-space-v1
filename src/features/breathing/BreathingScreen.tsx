@@ -15,6 +15,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
+import { useTranslation } from "react-i18next";
+
 
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { colors } from "../../shared/theme/colors";
@@ -29,13 +31,14 @@ type Mode = {
   rest: number;
 };
 
-const MODES: Mode[] = [
-  { id: "calma", title: "Calma (4–4–6)", subtitle: "Para bajar revoluciones y volver al centro.", inhale: 4, hold: 4, exhale: 6, rest: 0 },
-  { id: "antiestres", title: "Anti-estrés (4–2–6)", subtitle: "Rápida y efectiva cuando estás acelerado.", inhale: 4, hold: 2, exhale: 6, rest: 0 },
-  { id: "cuadrada", title: "Cuadrada (4–4–4–4)", subtitle: "Equilibra, enfoca y estabiliza.", inhale: 4, hold: 4, exhale: 4, rest: 4 },
-  { id: "suave", title: "Suave (3–1–5)", subtitle: "Ideal para empezar si eres principiante.", inhale: 3, hold: 1, exhale: 5, rest: 0 },
-  { id: "sueno", title: "Sueño (4–0–8)", subtitle: "Exhala más largo para soltar tensión y dormir mejor.", inhale: 4, hold: 0, exhale: 8, rest: 0 },
+const MODES_BASE: Omit<Mode, "title" | "subtitle">[] = [
+  { id: "calma", inhale: 4, hold: 4, exhale: 6, rest: 0 },
+  { id: "antiestres", inhale: 4, hold: 2, exhale: 6, rest: 0 },
+  { id: "cuadrada", inhale: 4, hold: 4, exhale: 4, rest: 4 },
+  { id: "suave", inhale: 3, hold: 1, exhale: 5, rest: 0 },
+  { id: "sueno", inhale: 4, hold: 0, exhale: 8, rest: 0 },
 ];
+
 
 type Phase = "idle" | "countdown" | "inhale" | "hold" | "exhale" | "rest" | "paused";
 
@@ -69,10 +72,27 @@ const AMBIENT_FILES: Record<AmbientId, any> = {
 type TotalPreset = "libre" | "5" | "10";
 
 export default function BreathingScreen({ route, navigation }: any) {
+  const { t } = useTranslation();
+    const MODES: Mode[] = useMemo(
+    () =>
+      MODES_BASE.map((m) => ({
+        ...m,
+        title: t(`breathing.modes.${m.id}.title`),
+        subtitle: t(`breathing.modes.${m.id}.subtitle`),
+      })),
+    [t]
+  );
+
+  const { i18n } = useTranslation();
+
   const initialModeId = (route?.params?.modeId as Mode["id"] | undefined) ?? MODES[0].id;
 
   const [modeId, setModeId] = useState<Mode["id"]>(initialModeId);
-  const mode = useMemo(() => MODES.find((m) => m.id === modeId) ?? MODES[0], [modeId]);
+  const mode = useMemo(
+   () => MODES.find((m) => m.id === modeId) ?? MODES[0],
+   [modeId, i18n.language]
+  );
+
 
   const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -465,35 +485,36 @@ export default function BreathingScreen({ route, navigation }: any) {
     }
   }, [route?.params?.modeId, route?.params?.totalSeconds, route?.params?.ambientOn, stopEverything, stopAmbient]);
 
-  const phaseLabel =
+   const phaseLabel =
     phase === "idle"
-      ? "Listo"
+      ? t("breathing.phase.ready")
       : phase === "countdown"
-      ? `Empieza en ${countdown}`
+      ? `${t("breathing.phase.startsIn")} ${countdown}`
       : phase === "inhale"
-      ? `Inhala · ${phaseLeft}s`
+      ? `${t("breathing.phase.inhale")} · ${phaseLeft}s`
       : phase === "hold"
-      ? `Mantén · ${phaseLeft}s`
+      ? `${t("breathing.phase.hold")} · ${phaseLeft}s`
       : phase === "exhale"
-      ? `Exhala · ${phaseLeft}s`
+      ? `${t("breathing.phase.exhale")} · ${phaseLeft}s`
       : phase === "rest"
-      ? `Pausa · ${phaseLeft}s`
-      : "Pausado";
+      ? `${t("breathing.phase.rest")} · ${phaseLeft}s`
+      : t("breathing.phase.paused");
 
-  const bigText =
+    const bigText =
     phase === "countdown"
       ? String(countdown)
       : phase === "idle"
-      ? "Comenzar"
+      ? t("breathing.controls.start")
       : phase === "paused"
-      ? "Pausado"
+      ? t("breathing.phase.paused")
       : phase === "inhale"
-      ? "Inhala"
+      ? t("breathing.phase.inhale")
       : phase === "hold"
-      ? "Mantén"
+      ? t("breathing.phase.hold")
       : phase === "exhale"
-      ? "Exhala"
-      : "Pausa";
+      ? t("breathing.phase.exhale")
+      : t("breathing.phase.rest");
+
 
   const cycleSeconds = mode.inhale + mode.hold + mode.exhale + mode.rest;
 
@@ -501,10 +522,9 @@ export default function BreathingScreen({ route, navigation }: any) {
     <View style={screenStyles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
         <View style={screenStyles.header}>
-          <Text style={screenStyles.title}>Ejercicio de Respiración</Text>
+          <Text style={screenStyles.title}>{t("breathing.title")}</Text>
           <Text style={screenStyles.subtitle}>
-            Sigue la guía visual para practicar la respiración consciente. Elige el modo que más te encaje hoy.
-          </Text>
+            {t("breathing.subtitle")}</Text>
         </View>
 
         <View style={styles.card}>
@@ -527,18 +547,22 @@ export default function BreathingScreen({ route, navigation }: any) {
           {/* 🔈 Sonido ambiente */}
           <View style={styles.toggleRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.toggleTitle}>Sonido ambiente</Text>
+              <Text style={styles.toggleTitle}>{t("breathing.ambient.title")}</Text>
               <Text style={styles.toggleSub}>
-                Sugerido:{" "}
-                {AMBIENT_BY_MODE[mode.id] === "lluvia" ? "Lluvia" : AMBIENT_BY_MODE[mode.id] === "olas" ? "Olas" : "Bosque"}
-              </Text>
+                {t("breathing.ambient.suggested")}{" "}
+                {AMBIENT_BY_MODE[mode.id] === "lluvia"
+                 ? t("breathing.ambient.rain")
+                 : AMBIENT_BY_MODE[mode.id] === "olas"
+                 ? t("breathing.ambient.waves")
+                 : t("breathing.ambient.forest")}
+             </Text>
             </View>
             <Switch value={ambientOn} onValueChange={(v) => void onToggleAmbient(v)} />
           </View>
 
           {/* ⏱️ Tiempo total */}
           <View style={styles.presetRow}>
-            <Text style={styles.presetLabel}>Tiempo total</Text>
+            <Text style={styles.presetLabel}>{t("breathing.totalTime.title")}</Text>
 
             <View style={styles.presetPills}>
               <Pressable
@@ -548,7 +572,7 @@ export default function BreathingScreen({ route, navigation }: any) {
                 }}
                 style={({ pressed }) => [styles.pill, totalPreset === "5" && styles.pillActive, pressed && { opacity: 0.92 }]}
               >
-                <Text style={[styles.pillText, totalPreset === "5" && styles.pillTextActive]}>5 min</Text>
+                <Text style={[styles.pillText, totalPreset === "5" && styles.pillTextActive]}>{t("breathing.totalTime.five")}</Text>
               </Pressable>
 
               <Pressable
@@ -558,7 +582,7 @@ export default function BreathingScreen({ route, navigation }: any) {
                 }}
                 style={({ pressed }) => [styles.pill, totalPreset === "10" && styles.pillActive, pressed && { opacity: 0.92 }]}
               >
-                <Text style={[styles.pillText, totalPreset === "10" && styles.pillTextActive]}>10 min</Text>
+                <Text style={[styles.pillText, totalPreset === "10" && styles.pillTextActive]}>{t("breathing.totalTime.ten")}</Text>
               </Pressable>
 
               <Pressable
@@ -568,12 +592,15 @@ export default function BreathingScreen({ route, navigation }: any) {
                 }}
                 style={({ pressed }) => [styles.pill, totalPreset === "libre" && styles.pillActive, pressed && { opacity: 0.92 }]}
               >
-                <Text style={[styles.pillText, totalPreset === "libre" && styles.pillTextActive]}>Libre</Text>
+                <Text style={[styles.pillText, totalPreset === "libre" && styles.pillTextActive]}>{t("breathing.totalTime.free")}</Text>
               </Pressable>
             </View>
 
             <Text style={styles.smallTime}>
-              {totalLimitSec == null ? `Tiempo: ${mmssFromSeconds(totalElapsed)}` : `Quedan: ${mmssFromSeconds(remainingSec ?? 0)}`}
+              {totalLimitSec == null
+               ? `${t("breathing.totalTime.elapsed")}: ${mmssFromSeconds(totalElapsed)}`
+               : `${t("breathing.totalTime.remaining")}: ${mmssFromSeconds(remainingSec ?? 0)}`}
+
             </Text>
           </View>
 
@@ -595,25 +622,30 @@ export default function BreathingScreen({ route, navigation }: any) {
                 color="#fff"
               />
               <Text style={styles.primaryText}>
-                {phase === "inhale" || phase === "hold" || phase === "exhale" || phase === "rest" ? "Pausar" : "Comenzar"}
+                {phase === "inhale" || phase === "hold" || phase === "exhale" || phase === "rest" ? t("breathing.controls.pause")
+               : t("breathing.controls.start")}
               </Text>
             </Pressable>
 
             <Pressable onPress={() => void onReset()} style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.9 }]}>
               <MaterialCommunityIcons name="restart" size={18} color={colors.text} />
-              <Text style={styles.secondaryText}>Reiniciar</Text>
+              <Text style={styles.secondaryText}>{t("breathing.controls.reset")}</Text>
             </Pressable>
           </View>
 
-          <Text style={styles.counter}>Respiraciones: {breathsDone} · Ciclo: {cycleSeconds}s</Text>
-          <Text style={styles.hint}>Consejo: si estás tenso, prueba exhalar más largo (por ejemplo 4–0–8).</Text>
+          <Text style={styles.counter}>
+           {t("breathing.stats.breaths")}: {breathsDone} · {t("breathing.stats.cycle")}: {cycleSeconds}s
+          </Text>
+
+          <Text style={styles.hint}>{t("breathing.hint")}</Text>
+
         </View>
 
         {/* Modal modos */}
         <Modal visible={pickerOpen} transparent animationType="fade" onRequestClose={() => setPickerOpen(false)}>
           <Pressable style={styles.modalBackdrop} onPress={() => setPickerOpen(false)}>
             <Pressable style={styles.modalCard} onPress={() => {}}>
-              <Text style={styles.modalTitle}>Elige un modo</Text>
+              <Text style={styles.modalTitle}>{t("breathing.modal.title")}</Text>
 
               <FlatList
                 data={MODES}

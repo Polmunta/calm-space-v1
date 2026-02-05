@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Pressable } from "react-native";
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { colors } from "../../shared/theme/colors";
 import { incrementSOSUsage } from "./sos.storage";
+import { useTranslation } from "react-i18next";
+
 
 const MODE_LABEL: Record<string, string> = {
   calma: "Calma (4–4–6)",
@@ -21,6 +23,7 @@ const SOUND_LABEL: Record<string, string> = {
 };
 
 export default function SOSDetailScreen({ route, navigation }: any) {
+  const { t } = useTranslation();
   const item = route?.params?.item;
 
   useEffect(() => {
@@ -30,8 +33,8 @@ export default function SOSDetailScreen({ route, navigation }: any) {
   if (!item) {
     return (
       <View style={screenStyles.container}>
-        <Text style={screenStyles.title}>SOS</Text>
-        <Text style={screenStyles.subtitle}>No se encontró el ejercicio.</Text>
+        <Text style={screenStyles.title}>{t("sos.title")}</Text>
+        <Text style={screenStyles.subtitle}>{t("sos.notFound")}</Text>
       </View>
     );
   }
@@ -40,26 +43,26 @@ export default function SOSDetailScreen({ route, navigation }: any) {
   const soundId = item?.suggest?.soundId as string | undefined;
 
   const suggestionText = useMemo(() => {
-    const a = breathingModeId ? MODE_LABEL[breathingModeId] : "";
-    const b = soundId ? SOUND_LABEL[soundId] : "";
-    if (a && b) return `Sugerencia: ${a} + ${b}`;
-    if (a) return `Sugerencia: ${a}`;
-    if (b) return `Sugerencia: ${b}`;
-    return "";
-  }, [breathingModeId, soundId]);
+  const a = breathingModeId ? t(`breathing.modes.${breathingModeId}.title`) : "";
+  const b = soundId ? t(`sounds.items.${soundId}.title`) : "";
+  if (a && b) return t("sos.suggestion.combo", { a, b });
+  if (a) return t("sos.suggestion.single", { a });
+  if (b) return t("sos.suggestion.single", { a: b });
+  return "";
+}, [breathingModeId, soundId, t]);
 
   return (
     <View style={screenStyles.container}>
       <View style={screenStyles.header}>
-        <Text style={screenStyles.title}>{item.detailTitle}</Text>
-        <Text style={screenStyles.subtitle}>Un minuto. Un paso.</Text>
+        <Text style={screenStyles.title}>{t(`sos.items.${item.id}.detailTitle`)}</Text>
+        <Text style={screenStyles.subtitle}>{t("sos.detailSubtitle")}</Text>
 
         {suggestionText ? <Text style={styles.suggestion}>{suggestionText}</Text> : null}
       </View>
 
       <View style={styles.card}>
-        {item.steps.map((s: string, idx: number) => (
-          <Text key={idx} style={styles.step}>
+        {(t(`sos.items.${item.id}.steps`, { returnObjects: true }) as string[]).map((s, idx) => (
+         <Text key={idx} style={styles.step}>
             {s}
           </Text>
         ))}
@@ -77,7 +80,7 @@ export default function SOSDetailScreen({ route, navigation }: any) {
           }
           style={({ pressed }) => [styles.primaryBtn, pressed && { opacity: 0.9 }]}
         >
-          <Text style={styles.primaryText}>Ir a Respiración</Text>
+          <Text style={styles.primaryText}>{t("sos.goBreathing")}</Text>
         </Pressable>
       ) : null}
 
@@ -91,7 +94,7 @@ export default function SOSDetailScreen({ route, navigation }: any) {
           }
           style={({ pressed }) => [styles.secondaryBtn, pressed && { opacity: 0.9 }]}
         >
-          <Text style={styles.secondaryText}>Ir a Sonidos</Text>
+          <Text style={styles.secondaryText}>{t("sos.goSounds")}</Text>
         </Pressable>
       ) : null}
     </View>

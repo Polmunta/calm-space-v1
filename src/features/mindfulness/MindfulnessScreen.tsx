@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, Text, StyleSheet, Pressable, FlatList } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
+
 
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { colors } from "../../shared/theme/colors";
@@ -31,6 +33,8 @@ function pickRandom<T>(arr: T[]) {
 }
 
 export default function MindfulnessScreen() {
+  const { t } = useTranslation();
+
   const [mode, setMode] = useState<Mode>("preguntas");
   const [qFilter, setQFilter] = useState<QuestionFilter>("all");
 
@@ -56,6 +60,25 @@ export default function MindfulnessScreen() {
     () => MINDFULNESS_EXERCISES.find((e) => e.id === activeExerciseId) ?? MINDFULNESS_EXERCISES[0],
     [activeExerciseId]
   );
+
+  
+
+  const activeExerciseI18n = useMemo(() => {
+    const id = activeExerciseId;
+
+    const title = t(`mindfulness.exercises.${id}.title`, { defaultValue: activeExercise.title });
+    const short = t(`mindfulness.exercises.${id}.short`, { defaultValue: activeExercise.short });
+    const description = t(`mindfulness.exercises.${id}.description`, { defaultValue: activeExercise.description });
+    const tip = t(`mindfulness.exercises.${id}.tip`, { defaultValue: activeExercise.tip });
+
+    const steps = t(`mindfulness.exercises.${id}.steps`, {
+      returnObjects: true,
+      defaultValue: activeExercise.steps,
+    }) as { title: string; text: string }[];
+
+    return { title, short, description, tip, steps };
+  }, [activeExerciseId, activeExercise.title, activeExercise.short, activeExercise.description, activeExercise.tip, activeExercise.steps, t]);
+
 
   // Load persisted
   useEffect(() => {
@@ -93,6 +116,14 @@ export default function MindfulnessScreen() {
     if (!currentQId) return filteredQuestions[0] ?? null;
     return filteredQuestions.find((q) => q.id === currentQId) ?? filteredQuestions[0] ?? null;
   }, [currentQId, filteredQuestions]);
+
+    const currentQuestionText = useMemo(() => {
+    if (!currentQuestion?.id) return t("mindfulness.loading");
+    return t(`mindfulness.questions.${currentQuestion.id}`, {
+      defaultValue: currentQuestion.text,
+    });
+  }, [currentQuestion?.id, currentQuestion?.text, t]);
+
 
   const isFavMode = qFilter === "fav";
 
@@ -211,10 +242,8 @@ export default function MindfulnessScreen() {
   return (
     <View style={screenStyles.container}>
       <View style={screenStyles.header}>
-        <Text style={screenStyles.title}>Preguntas de Atención Plena</Text>
-        <Text style={screenStyles.subtitle}>
-          Reflexiona con preguntas breves o haz un ejercicio rápido para volver al presente.
-        </Text>
+        <Text style={screenStyles.title}>{t("mindfulness.title")}</Text>
+        <Text style={screenStyles.subtitle}>{t("mindfulness.subtitle")}</Text>
       </View>
 
       {/* Tabs principales */}
@@ -227,9 +256,9 @@ export default function MindfulnessScreen() {
             pressed && { opacity: 0.92 },
           ]}
         >
-          <Text style={[styles.topTabText, mode === "preguntas" && styles.topTabTextActive]}>
-            Preguntas
-          </Text>
+          <Text style={[styles.topTabText, mode === "preguntas" &&  styles.topTabTextActive]}>
+           {t("mindfulness.tabs.questions")}
+         </Text>
         </Pressable>
 
         <Pressable
@@ -241,8 +270,8 @@ export default function MindfulnessScreen() {
           ]}
         >
           <Text style={[styles.topTabText, mode === "ejercicios" && styles.topTabTextActive]}>
-            Ejercicios
-          </Text>
+           {t("mindfulness.tabs.exercises")}
+         </Text>
         </Pressable>
       </View>
 
@@ -258,7 +287,9 @@ export default function MindfulnessScreen() {
                 pressed && { opacity: 0.92 },
               ]}
             >
-              <Text style={[styles.chipText, qFilter === "all" && styles.chipTextActive]}>Todas</Text>
+              <Text style={[styles.chipText, qFilter === "all" && styles.chipTextActive]}>
+               {t("mindfulness.filter.all")}
+              </Text>
             </Pressable>
 
             <Pressable
@@ -277,7 +308,7 @@ export default function MindfulnessScreen() {
                 color={qFilter === "fav" ? colors.primary : "rgba(74,74,74,0.7)"}
               />
               <Text style={[styles.chipText, qFilter === "fav" && styles.chipTextActive]}>
-                Favoritas
+               {t("mindfulness.filter.favs")}
               </Text>
             </Pressable>
 
@@ -291,7 +322,7 @@ export default function MindfulnessScreen() {
           {/* Card pregunta */}
           <View style={styles.bigCard}>
             <View style={styles.bigCardTop}>
-              <Text style={styles.bigTitle}>Pregunta</Text>
+              <Text style={styles.bigTitle}>{t("mindfulness.questionLabel")}</Text>
 
               {currentQuestion ? (
                 <Pressable
@@ -308,7 +339,7 @@ export default function MindfulnessScreen() {
             </View>
 
             <Text style={styles.questionText}>
-              {currentQuestion?.text ?? "Cargando…"}
+             {currentQuestionText}
             </Text>
 
             <View style={styles.qControls}>
@@ -322,21 +353,19 @@ export default function MindfulnessScreen() {
                 ]}
               >
                 <MaterialCommunityIcons name="chevron-left" size={20} color={colors.text} />
-                <Text style={styles.navBtnText}>Anterior</Text>
+                <Text style={styles.navBtnText}>{t("mindfulness.controls.prev")}</Text>
               </Pressable>
 
               <Pressable
                 onPress={() => void nextQuestion()}
                 style={({ pressed }) => [styles.navBtnPrimary, pressed && { opacity: 0.92 }]}
               >
-                <Text style={styles.navBtnPrimaryText}>Siguiente</Text>
+                <Text style={styles.navBtnPrimaryText}>{t("mindfulness.controls.next")}</Text>
                 <MaterialCommunityIcons name="chevron-right" size={20} color="#fff" />
               </Pressable>
             </View>
 
-            <Text style={styles.hint}>
-              Tip: si te distraes, vuelve a la respiración 1 vez y retoma.
-            </Text>
+            <Text style={styles.hint}>{t("mindfulness.tipQuestions")}</Text>
           </View>
         </>
       ) : (
@@ -363,11 +392,13 @@ export default function MindfulnessScreen() {
                   ]}
                 >
                   <Text style={[styles.exerciseTitle, active && { color: colors.primary }]}>
-                    {item.title}
+                    {t(`mindfulness.exercises.${item.id}.title`, { defaultValue: item.title })}
                   </Text>
 
                   {/* ✅ descripción breve (lo que pediste) */}
-                  <Text style={styles.exerciseShort}>{item.short}</Text>
+                  <Text style={styles.exerciseShort}>
+                    {t(`mindfulness.exercises.${item.id}.short`, { defaultValue: item.short })}
+                  </Text>
                 </Pressable>
               );
             }}
@@ -375,12 +406,12 @@ export default function MindfulnessScreen() {
 
           {/* Detalle ejercicio */}
           <View style={styles.bigCard}>
-            <Text style={styles.exerciseHeader}>{activeExercise.title}</Text>
-            <Text style={styles.exerciseDesc}>{activeExercise.description}</Text>
+            <Text style={styles.exerciseHeader}>{activeExerciseI18n.title}</Text>
+            <Text style={styles.exerciseDesc}>{activeExerciseI18n.description}</Text>
 
             <View style={styles.stepBox}>
-              <Text style={styles.stepTitle}>{activeExercise.steps[stepIndex]?.title}</Text>
-              <Text style={styles.stepText}>{activeExercise.steps[stepIndex]?.text}</Text>
+              <Text style={styles.stepTitle}>{activeExerciseI18n.steps[stepIndex]?.title}</Text>
+              <Text style={styles.stepText}>{activeExerciseI18n.steps[stepIndex]?.text}</Text>
 
               <View style={styles.stepControls}>
                 <Pressable
@@ -393,26 +424,27 @@ export default function MindfulnessScreen() {
                   ]}
                 >
                   <MaterialCommunityIcons name="chevron-left" size={20} color={colors.text} />
-                  <Text style={styles.navBtnText}>Anterior</Text>
+                  <Text style={styles.navBtnText}>{t("mindfulness.controls.prev")}</Text>
                 </Pressable>
 
                 <Pressable
-                  onPress={() => setStepIndex((i) => Math.min(activeExercise.steps.length - 1, i + 1))}
-                  disabled={stepIndex >= activeExercise.steps.length - 1}
+                  onPress={() => setStepIndex((i) => Math.min(activeExerciseI18n.steps.length - 1, i + 1))}
+                  disabled={stepIndex >= activeExerciseI18n.steps.length - 1}
                   style={({ pressed }) => [
                     styles.navBtnPrimary,
-                    stepIndex >= activeExercise.steps.length - 1 && styles.navBtnDisabledPrimary,
-                    pressed && stepIndex < activeExercise.steps.length - 1 && { opacity: 0.92 },
+                    stepIndex >= activeExerciseI18n.steps.length - 1 && styles.navBtnDisabledPrimary,
+                    pressed && stepIndex < activeExerciseI18n.steps.length - 1 && { opacity: 0.92 },
                   ]}
                 >
-                  <Text style={styles.navBtnPrimaryText}>Siguiente</Text>
+                  <Text style={styles.navBtnPrimaryText}>{t("mindfulness.controls.next")}</Text>
                   <MaterialCommunityIcons name="chevron-right" size={20} color="#fff" />
                 </Pressable>
               </View>
 
-              <Text style={styles.hint}>{activeExercise.tip}</Text>
+              <Text style={styles.hint}>{activeExerciseI18n.tip}</Text>
             </View>
           </View>
+
         </>
       )}
     </View>
