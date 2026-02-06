@@ -12,6 +12,8 @@ import {
   Modal,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
+import i18n from "../../shared/i18n/i18n";
 
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { colors } from "../../shared/theme/colors";
@@ -101,12 +103,10 @@ function normalizeFromArray(arr: any[] | null): Conversation[] {
     .map((c) => normalizeConversationAny(c))
     .filter(Boolean) as Conversation[];
 
-  // ordenar por createdAt desc (no te importa el orden, pero así queda bien)
   normalized.sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
   return normalized;
 }
 
-// Unir conversaciones sin duplicarlas (por id). Si se repiten, nos quedamos con la que tenga más mensajes.
 function mergeConversations(lists: Conversation[][]): Conversation[] {
   const map = new Map<string, Conversation>();
 
@@ -125,7 +125,6 @@ function mergeConversations(lists: Conversation[][]): Conversation[] {
 
   const merged = Array.from(map.values());
 
-  // recortar mensajes por conversación y ordenar mensajes por tiempo
   const cleaned = merged.map((c) => {
     const sortedMsgs = [...(c.messages ?? [])].sort(
       (a, b) => (a.createdAt ?? 0) - (b.createdAt ?? 0)
@@ -139,12 +138,13 @@ function mergeConversations(lists: Conversation[][]): Conversation[] {
   });
 
   cleaned.sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
-
-  // máximo 10 conversaciones
   return cleaned.slice(0, MAX_CONVERSATIONS);
 }
 
 export default function JournalScreen({ navigation }: any) {
+  const { t } = useTranslation();
+
+
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -157,11 +157,9 @@ export default function JournalScreen({ navigation }: any) {
   const lastTrimNoticeAtRef = useRef<number>(0);
   const didMigrateRef = useRef(false);
 
-  // ✅ CARGA + MIGRACIÓN DEFINITIVA A V3 (fusiona v1/v2/v3)
   useEffect(() => {
     (async () => {
       try {
-        // 1) cargar arrays si existen
         const rawV3 = await AsyncStorage.getItem(STORAGE_KEY_V3_CONV);
         const rawV2 = await AsyncStorage.getItem(STORAGE_KEY_V2_CONV);
         const rawV1Conv = await AsyncStorage.getItem(STORAGE_KEY_V1_CONV);
@@ -171,9 +169,6 @@ export default function JournalScreen({ navigation }: any) {
         const v2List = normalizeFromArray(safeParseArray(rawV2));
         const v1List = normalizeFromArray(safeParseArray(rawV1Conv));
 
-        // legacy puede ser:
-        // - un array de conversaciones
-        // - o un objeto con { conversations: [...] }
         let legacyList: Conversation[] = [];
         if (rawV1Legacy) {
           try {
@@ -183,9 +178,7 @@ export default function JournalScreen({ navigation }: any) {
             } else if (parsed && Array.isArray(parsed.conversations)) {
               legacyList = normalizeFromArray(parsed.conversations);
             }
-          } catch {
-            // ignore
-          }
+          } catch {}
         }
 
         const merged = mergeConversations([v3List, v2List, v1List, legacyList]);
@@ -194,31 +187,27 @@ export default function JournalScreen({ navigation }: any) {
           setConversations(merged);
           setActiveId(merged[0].id);
 
-          // 2) guardar en v3 (migración definitiva)
           if (!didMigrateRef.current) {
             didMigrateRef.current = true;
-            await AsyncStorage.setItem(STORAGE_KEY_V3_CONV, JSON.stringify(merged));
+            await AsyncStorage.setItem(
+              STORAGE_KEY_V3_CONV,
+              JSON.stringify(merged)
+            );
           }
           return;
         }
-      } catch {
-        // ignore
-      }
+      } catch {}
     })();
   }, []);
 
-  // ✅ Guardado (siempre en v3)
   useEffect(() => {
     (async () => {
       try {
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
-      } catch {
-        // ignore
-      }
+      } catch {}
     })();
   }, [conversations]);
 
-  // Si no hay conversación, crear 1
   useEffect(() => {
     if (conversations.length === 0 && activeId === null) {
       const now = Date.now();
@@ -242,9 +231,9 @@ export default function JournalScreen({ navigation }: any) {
   const headerSubtitle = useMemo(() => {
     const n = conversations.length;
     return n === 1
-      ? "Escribe y recibe una reflexión guiada."
-      : `Guardadas ${n} conversaciones (máx ${MAX_CONVERSATIONS}).`;
-  }, [conversations.length]);
+      ? t("journal.subtitleSingle")
+      : t("journal.subtitleMultiple", { count: n, max: MAX_CONVERSATIONS });
+  }, [conversations.length, t]);
 
   const createNewConversation = () => {
     const now = Date.now();
@@ -271,10 +260,7 @@ export default function JournalScreen({ navigation }: any) {
     if (now - lastTrimNoticeAtRef.current < 30_000) return;
     lastTrimNoticeAtRef.current = now;
 
-    Alert.alert(
-      "Diario",
-      "Para que la app no pese demasiado, esta conversación guarda solo los últimos mensajes (límite de 30 turnos)."
-    );
+    Alert.alert(t("journal.alerts.title"), t("journal.alerts.trimNotice"));
   };
 
   const appendMessagesToActive = (msgs: Message[]) => {
@@ -310,15 +296,15 @@ export default function JournalScreen({ navigation }: any) {
 
     const raw = text.trim();
     if (!raw) {
-      Alert.alert("Diario", "Escribe algo antes de enviar.");
+      Alert.alert(t("journal.alerts.title"), t("journal.alerts.writeSomething"));
       return;
     }
 
     const userText = raw.slice(0, MAX_CHARS_PER_MESSAGE);
     if (raw.length > MAX_CHARS_PER_MESSAGE) {
       Alert.alert(
-        "Diario",
-        `He recortado tu mensaje a ${MAX_CHARS_PER_MESSAGE} caracteres para mantener el diario ligero.`
+        t("journal.alerts.title"),
+        t("journal.alerts.trimmed", { count: MAX_CHARS_PER_MESSAGE })
       );
     }
 
@@ -333,6 +319,7 @@ export default function JournalScreen({ navigation }: any) {
         userText,
         context,
         activeConversation.mode
+        
       );
 
       setSuggestions(result.suggestions);
@@ -346,8 +333,10 @@ export default function JournalScreen({ navigation }: any) {
       appendMessagesToActive(newMsgs);
       setText("");
     } catch (e: any) {
-      Alert.alert("Error", String(e?.message ?? "No se pudo generar la reflexión."));
+      const fallback = t("journal.errors.couldNotGenerate");
+      Alert.alert(t("journal.errors.title"), String(e?.message ?? fallback));
     } finally {
+
       setLoading(false);
     }
   };
@@ -355,43 +344,49 @@ export default function JournalScreen({ navigation }: any) {
   const onClearActive = () => {
     if (!activeConversation) return;
 
-    Alert.alert("Borrar conversación", "¿Quieres borrar solo esta conversación?", [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Borrar",
-        style: "destructive",
-        onPress: () => {
-          setConversations((prev) =>
-            prev.map((c) =>
-              c.id === activeConversation.id ? { ...c, messages: [] } : c
-            )
-          );
-          setSuggestions([]);
+    Alert.alert(
+      t("journal.actions.clearOneTitle"),
+      t("journal.actions.clearOneText"),
+      [
+        { text: t("journal.actions.cancel"), style: "cancel" },
+        {
+          text: t("journal.actions.delete"),
+          style: "destructive",
+          onPress: () => {
+            setConversations((prev) =>
+              prev.map((c) =>
+                c.id === activeConversation.id ? { ...c, messages: [] } : c
+              )
+            );
+            setSuggestions([]);
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
   const onClearAll = () => {
-    Alert.alert("Borrar todo", "¿Borrar todas las conversaciones guardadas?", [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Borrar todo",
-        style: "destructive",
-        onPress: async () => {
-          setConversations([]);
-          setActiveId(null);
-          setText("");
-          setSuggestions([]);
+    Alert.alert(
+      t("journal.actions.clearAllTitle"),
+      t("journal.actions.clearAllText"),
+      [
+        { text: t("journal.actions.cancel"), style: "cancel" },
+        {
+          text: t("journal.actions.delete"),
+          style: "destructive",
+          onPress: async () => {
+            setConversations([]);
+            setActiveId(null);
+            setText("");
+            setSuggestions([]);
 
-          try {
-            await AsyncStorage.removeItem(STORAGE_KEY_V3_CONV);
-          } catch {
-            // ignore
-          }
+            try {
+              await AsyncStorage.removeItem(STORAGE_KEY_V3_CONV);
+            } catch {}
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
   const messages = activeConversation?.messages ?? [];
@@ -406,10 +401,11 @@ export default function JournalScreen({ navigation }: any) {
         <View style={screenStyles.header}>
           <View style={styles.headerRow}>
             <View style={{ flex: 1 }}>
-              <Text style={screenStyles.title}>Diario</Text>
+              <Text style={screenStyles.title}>{t("journal.title")}</Text>
               <Text style={screenStyles.subtitle}>{headerSubtitle}</Text>
+
               <Text style={styles.activeHint}>
-                Conversación actual:{" "}
+                {t("journal.currentConversation")}{" "}
                 <Text style={{ fontWeight: "800" }}>
                   {activeConversation?.title ?? "-"}
                 </Text>
@@ -424,7 +420,7 @@ export default function JournalScreen({ navigation }: any) {
                   pressed && styles.smallBtnPressed,
                 ]}
               >
-                <Text style={styles.smallBtnText}>Cambiar</Text>
+                <Text style={styles.smallBtnText}>{t("journal.change")}</Text>
               </Pressable>
 
               <Pressable
@@ -434,7 +430,7 @@ export default function JournalScreen({ navigation }: any) {
                   pressed && styles.smallBtnPressed,
                 ]}
               >
-                <Text style={styles.smallBtnPrimaryText}>Nueva</Text>
+                <Text style={styles.smallBtnPrimaryText}>{t("journal.new")}</Text>
               </Pressable>
             </View>
           </View>
@@ -443,10 +439,8 @@ export default function JournalScreen({ navigation }: any) {
         <View style={styles.listWrap}>
           {messages.length === 0 ? (
             <View style={styles.emptyCard}>
-              <Text style={styles.emptyTitle}>Empieza cuando quieras</Text>
-              <Text style={styles.emptyText}>
-                Escribe una emoción o situación. Te responderé con una reflexión guiada.
-              </Text>
+              <Text style={styles.emptyTitle}>{t("journal.empty.title")}</Text>
+              <Text style={styles.emptyText}>{t("journal.empty.text")}</Text>
 
               <View style={{ height: 10 }} />
 
@@ -457,7 +451,7 @@ export default function JournalScreen({ navigation }: any) {
                   pressed && styles.ghostBtnPressed,
                 ]}
               >
-                <Text style={styles.ghostBtnText}>Borrar todo el historial</Text>
+                <Text style={styles.ghostBtnText}>{t("journal.empty.clearAll")}</Text>
               </Pressable>
             </View>
           ) : (
@@ -492,7 +486,7 @@ export default function JournalScreen({ navigation }: any) {
                     pressed && { opacity: 0.9 },
                   ]}
                 >
-                  <Text style={styles.suggestText}>Abrir SOS 60s</Text>
+                  <Text style={styles.suggestText}>{t("journal.suggestions.sos")}</Text>
                 </Pressable>
               )}
 
@@ -504,7 +498,7 @@ export default function JournalScreen({ navigation }: any) {
                     pressed && { opacity: 0.9 },
                   ]}
                 >
-                  <Text style={styles.suggestText}>Ir a Respiración</Text>
+                  <Text style={styles.suggestText}>{t("journal.suggestions.breathing")}</Text>
                 </Pressable>
               )}
 
@@ -516,7 +510,7 @@ export default function JournalScreen({ navigation }: any) {
                     pressed && { opacity: 0.9 },
                   ]}
                 >
-                  <Text style={styles.suggestText}>Ir a Sonidos</Text>
+                  <Text style={styles.suggestText}>{t("journal.suggestions.sounds")}</Text>
                 </Pressable>
               )}
 
@@ -528,7 +522,7 @@ export default function JournalScreen({ navigation }: any) {
                     pressed && { opacity: 0.9 },
                   ]}
                 >
-                  <Text style={styles.suggestText}>Atención plena</Text>
+                  <Text style={styles.suggestText}>{t("journal.suggestions.mindfulness")}</Text>
                 </Pressable>
               )}
             </View>
@@ -556,13 +550,7 @@ export default function JournalScreen({ navigation }: any) {
                         active && styles.modeTextActive,
                       ]}
                     >
-                      {m === "suave"
-                        ? "Suave"
-                        : m === "practico"
-                        ? "Práctico"
-                        : m === "preguntas"
-                        ? "Preguntas"
-                        : "Breve"}
+                      {t(`journal.modes.${m}`)}
                     </Text>
                   </Pressable>
                 );
@@ -573,7 +561,7 @@ export default function JournalScreen({ navigation }: any) {
           <TextInput
             value={text}
             onChangeText={setText}
-            placeholder="Escribe aquí..."
+            placeholder={t("journal.placeholder")}
             placeholderTextColor="rgba(74, 74, 74, 0.45)"
             multiline
             editable={!loading}
@@ -589,7 +577,7 @@ export default function JournalScreen({ navigation }: any) {
                 pressed && styles.clearBtnPressed,
               ]}
             >
-              <Text style={styles.clearBtnText}>Borrar esta</Text>
+              <Text style={styles.clearBtnText}>{t("journal.actions.clearOne")}</Text>
             </Pressable>
 
             <Pressable
@@ -601,7 +589,7 @@ export default function JournalScreen({ navigation }: any) {
               ]}
             >
               <Text style={styles.sendBtnText}>
-                {loading ? "..." : "Enviar"}
+                {loading ? t("journal.actions.sending") : t("journal.actions.send")}
               </Text>
             </Pressable>
           </View>
@@ -610,7 +598,7 @@ export default function JournalScreen({ navigation }: any) {
         <Modal visible={pickerOpen} transparent animationType="fade">
           <View style={styles.modalBackdrop}>
             <View style={styles.modalCard}>
-              <Text style={styles.modalTitle}>Conversaciones</Text>
+              <Text style={styles.modalTitle}>{t("journal.picker.title")}</Text>
 
               <FlatList
                 data={conversations}
@@ -618,6 +606,16 @@ export default function JournalScreen({ navigation }: any) {
                 keyboardShouldPersistTaps="handled"
                 renderItem={({ item }) => {
                   const isActive = item.id === activeId;
+
+                  const modeLabel =
+                    item.mode === "suave"
+                      ? t("journal.modes.suave")
+                      : item.mode === "practico"
+                      ? t("journal.modes.practico")
+                      : item.mode === "preguntas"
+                      ? t("journal.modes.preguntas")
+                      : t("journal.modes.breve");
+
                   return (
                     <Pressable
                       onPress={() => {
@@ -633,14 +631,10 @@ export default function JournalScreen({ navigation }: any) {
                     >
                       <Text style={styles.convTitle}>{item.title}</Text>
                       <Text style={styles.convMeta}>
-                        {item.messages.length} mensajes · Modo:{" "}
-                        {item.mode === "suave"
-                          ? "Suave"
-                          : item.mode === "practico"
-                          ? "Práctico"
-                          : item.mode === "preguntas"
-                          ? "Preguntas"
-                          : "Breve"}
+                        {t("journal.picker.messages", {
+                          count: item.messages.length,
+                          mode: modeLabel,
+                        })}
                       </Text>
                     </Pressable>
                   );
@@ -656,7 +650,7 @@ export default function JournalScreen({ navigation }: any) {
                   pressed && styles.modalClosePressed,
                 ]}
               >
-                <Text style={styles.modalCloseText}>Cerrar</Text>
+                <Text style={styles.modalCloseText}>{t("journal.picker.close")}</Text>
               </Pressable>
             </View>
           </View>

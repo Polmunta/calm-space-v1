@@ -2,10 +2,10 @@
   "tabs": {
     "home": "Inicio",
     "sos": "SOS",
-    "breathing": "Respirar",
-    "mindfulness": "Atención plena",
+    "breathing": "Respira",
+    "mindfulness": "Atención",
     "sounds": "Sonidos",
-    "meditations": "Meditaciones",
+    "meditations": "Medita",
     "journal": "Diario"
   },
   "nav": {
@@ -43,7 +43,15 @@
     "maxChars": "Máx {{count}} caracteres",
     "streak": "🔥 Racha: {{days}} días",
     "totalCalm": "Tiempo total de calma: {{time}}",
-    "lastActivity": "Última actividad: {{label}}"
+    "lastActivity": "Última actividad: {{label}}",
+    "tapToEdit": "Toca para editar",
+    "removeAvatar": "Quitar avatar",
+    "chooseAvatar": "Elige un avatar",
+    "pickFromGallery": "Elegir de galería",
+    "avatars": "Avatares",
+    "editName": "Editar nombre",
+    "cancel": "Cancelar",
+    "save": "Guardar"
   },
   "language": {
     "title": "Idioma",
@@ -346,7 +354,70 @@
         ]
       }
     }
+  },
+  "journal": {
+    "title": "Diario",
+    "subtitleSingle": "Escribe y recibe una reflexión guiada.",
+    "subtitleMultiple": "Guardadas {{count}} conversaciones (máx {{max}}).",
+
+    "currentConversation": "Conversación actual:",
+    "change": "Cambiar",
+    "new": "Nueva",
+
+    "empty": {
+      "title": "Empieza cuando quieras",
+      "text": "Escribe una emoción o situación. Te responderé con una reflexión guiada.",
+      "clearAll": "Borrar todo el historial"
+    },
+
+    "alerts": {
+      "title": "Diario",
+      "writeSomething": "Escribe algo antes de enviar.",
+      "trimmed": "He recortado tu mensaje a {{count}} caracteres para mantener el diario ligero.",
+      "trimNotice": "Para que la app no pese demasiado, esta conversación guarda solo los últimos mensajes."
+    },
+
+    "errors": {
+      "title": "Error",
+      "couldNotGenerate": "No se pudo generar la reflexión."
+    },
+
+
+    "actions": {
+      "send": "Enviar",
+      "sending": "...",
+      "clearOne": "Borrar esta",
+      "clearAllTitle": "Borrar todo",
+      "clearAllText": "¿Borrar todas las conversaciones guardadas?",
+      "clearOneTitle": "Borrar conversación",
+      "clearOneText": "¿Quieres borrar solo esta conversación?",
+      "cancel": "Cancelar",
+      "delete": "Borrar"
+    },
+
+    "suggestions": {
+      "sos": "Abrir SOS 60s",
+      "breathing": "Ir a Respiración",
+      "sounds": "Ir a Sonidos",
+      "mindfulness": "Atención plena"
+    },
+
+    "modes": {
+      "suave": "Suave",
+      "practico": "Práctico",
+      "preguntas": "Preguntas",
+      "breve": "Breve"
+    },
+
+    "placeholder": "Escribe aquí…",
+
+    "picker": {
+      "title": "Conversaciones",
+      "messages": "{{count}} mensajes · Modo: {{mode}}",
+      "close": "Cerrar"
+    }
   }
+
 
 
 }

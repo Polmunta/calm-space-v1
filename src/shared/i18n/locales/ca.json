@@ -2,10 +2,10 @@
   "tabs": {
     "home": "Inici",
     "sos": "SOS",
-    "breathing": "Respirar",
-    "mindfulness": "Atenció plena",
+    "breathing": "Respira",
+    "mindfulness": "Atenció",
     "sounds": "Sons",
-    "meditations": "Meditacions",
+    "meditations": "Medita",
     "journal": "Diari"
   },
   "nav": {
@@ -35,6 +35,7 @@
     "diaryTitle": "Diari",
     "diarySub": "Escriu i reflexiona amb ajuda"
   },
+  
   "profile": {
     "title": "Perfil",
     "subtitle": "El teu progrés.",
@@ -43,7 +44,16 @@
     "maxChars": "Màx {{count}} caràcters",
     "streak": "🔥 Ratxa: {{days}} dies",
     "totalCalm": "Temps total de calma: {{time}}",
-    "lastActivity": "Última activitat: {{label}}"
+    "lastActivity": "Última activitat: {{label}}",
+    "tapToEdit": "Toca per editar",
+    "removeAvatar": "Treure avatar",
+    "chooseAvatar": "Tria un avatar",
+    "pickFromGallery": "Triar de la galeria",
+    "avatars": "Avatars",
+    "editName": "Editar el nom",
+    "cancel": "Cancel·lar",
+    "save": "Desar"
+
   },
   "language": {
     "title": "Idioma",
@@ -346,7 +356,70 @@
         ]
       }
     }
+  },
+  "journal": {
+    "title": "Diari",
+    "subtitleSingle": "Escriu i rep una reflexió guiada.",
+    "subtitleMultiple": "{{count}} converses desades (màx {{max}}).",
+
+    "currentConversation": "Conversa actual:",
+    "change": "Canviar",
+    "new": "Nova",
+
+    "empty": {
+      "title": "Comença quan vulguis",
+      "text": "Escriu una emoció o situació. Rebràs una reflexió guiada.",
+      "clearAll": "Esborrar tot l’historial"
+    },
+
+    "alerts": {
+      "title": "Diari",
+      "writeSomething": "Escriu alguna cosa abans d’enviar.",
+      "trimmed": "El missatge s’ha retallat a {{count}} caràcters per mantenir el diari lleuger.",
+      "trimNotice": "Perquè l’app no pesi massa, només es guarden els últims missatges."
+    },
+
+    "errors": {
+      "title": "Error",
+      "couldNotGenerate": "No s’ha pogut generar la reflexió."
+    },
+
+
+    "actions": {
+      "send": "Enviar",
+      "sending": "...",
+      "clearOne": "Esborrar aquesta",
+      "clearAllTitle": "Esborrar tot",
+      "clearAllText": "Vols esborrar totes les converses desades?",
+      "clearOneTitle": "Esborrar conversa",
+      "clearOneText": "Vols esborrar només aquesta conversa?",
+      "cancel": "Cancel·lar",
+      "delete": "Esborrar"
+    },
+
+    "suggestions": {
+      "sos": "Obrir SOS 60s",
+      "breathing": "Anar a Respiració",
+      "sounds": "Anar a Sons",
+      "mindfulness": "Atenció plena"
+    },
+
+    "modes": {
+      "suave": "Suau",
+      "practico": "Pràctic",
+      "preguntas": "Preguntes",
+      "breve": "Breu"
+    },
+
+    "placeholder": "Escriu aquí…",
+
+    "picker": {
+      "title": "Converses",
+      "messages": "{{count}} missatges · Mode: {{mode}}",
+      "close": "Tancar"
+    }
   }
+
 
 
 

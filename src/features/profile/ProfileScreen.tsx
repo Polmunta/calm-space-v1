@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TextInput, Pressable, Image, Modal, FlatList } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { colors } from "../../shared/theme/colors";
@@ -32,6 +33,8 @@ const PRESET_AVATARS = [
 ] as const;
 
 export default function ProfileScreen() {
+  const { t } = useTranslation();
+
   const [name, setNameState] = useState("");
 
   const [avatarUri, setAvatarUri] = useState<string>(""); // uri galería
@@ -101,7 +104,6 @@ export default function ProfileScreen() {
 
   /** ✅ Elegir avatar preset (guardamos como “uri” falso usando id, pero visualmente renderizamos require) */
   const pickPreset = async (id: string) => {
-    // Para no cambiar tu storage ni complicarte:
     // guardamos "preset:a1" en avatarUri
     const value = `preset:${id}`;
     setPresetAvatarId(id);
@@ -133,12 +135,10 @@ export default function ProfileScreen() {
   return (
     <View style={screenStyles.container}>
       <View style={screenStyles.header}>
-        {/* ✅ “Perfil” del header ya sale en lavanda; este lo dejamos en gris */}
-        <Text style={styles.grayTitle}>Perfil</Text>
-        <Text style={screenStyles.subtitle}>Tu progreso.</Text>
+        <Text style={styles.grayTitle}>{t("profile.title")}</Text>
+        <Text style={screenStyles.subtitle}>{t("profile.subtitle")}</Text>
       </View>
 
-      {/* ✅ Bloque perfil “integrado”: avatar + nombre (sin input grande siempre visible) */}
       <View style={styles.profileRow}>
         <Pressable
           onPress={() => setAvatarPickerOpen(true)}
@@ -156,37 +156,47 @@ export default function ProfileScreen() {
 
         <View style={{ flex: 1 }}>
           <Pressable onPress={openEditName} style={({ pressed }) => pressed && { opacity: 0.9 }}>
-            <Text style={styles.profileName}>{name?.trim() ? name : "Tu nombre"}</Text>
-            <Text style={styles.profileHint}>Toca para editar</Text>
+            <Text style={styles.profileName}>
+              {name?.trim() ? name : t("profile.yourName")}
+            </Text>
+            <Text style={styles.profileHint}>{t("profile.tapToEdit")}</Text>
           </Pressable>
 
-          {(!!avatarUri) ? (
-            <Pressable onPress={() => void clearAvatar()} style={({ pressed }) => [styles.removeAvatarBtn, pressed && { opacity: 0.9 }]}>
-              <Text style={styles.removeAvatarText}>Quitar avatar</Text>
+          {!!avatarUri ? (
+            <Pressable
+              onPress={() => void clearAvatar()}
+              style={({ pressed }) => [styles.removeAvatarBtn, pressed && { opacity: 0.9 }]}
+            >
+              <Text style={styles.removeAvatarText}>{t("profile.removeAvatar")}</Text>
             </Pressable>
           ) : null}
         </View>
       </View>
 
-      {/* ✅ Progreso (NO lo toco) */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>🔥 Racha: {streak} días</Text>
-        <Text style={styles.cardLine}>Tiempo total de calma: {mmss(totalCalmSeconds)}</Text>
-        <Text style={styles.cardLine}>Última actividad: {lastActivityLabel}</Text>
+        <Text style={styles.cardTitle}>
+          {t("profile.streak", { days: streak })}
+        </Text>
+        <Text style={styles.cardLine}>
+          {t("profile.totalCalm", { time: mmss(totalCalmSeconds) })}
+        </Text>
+        <Text style={styles.cardLine}>
+          {t("profile.lastActivity", { label: lastActivityLabel })}
+        </Text>
       </View>
 
       {/* Modal: elegir avatar */}
       <Modal visible={avatarPickerOpen} transparent animationType="fade" onRequestClose={() => setAvatarPickerOpen(false)}>
         <Pressable style={styles.modalBackdrop} onPress={() => setAvatarPickerOpen(false)}>
           <Pressable style={styles.modalCard} onPress={() => {}}>
-            <Text style={styles.modalTitle}>Elige un avatar</Text>
+            <Text style={styles.modalTitle}>{t("profile.chooseAvatar")}</Text>
 
             <Pressable onPress={() => void pickFromGallery()} style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.92 }]}>
               <MaterialCommunityIcons name="image-outline" size={18} color={colors.primary} />
-              <Text style={styles.actionText}>Elegir de galería</Text>
+              <Text style={styles.actionText}>{t("profile.pickFromGallery")}</Text>
             </Pressable>
 
-            <Text style={styles.modalLabel}>Avatares</Text>
+            <Text style={styles.modalLabel}>{t("profile.avatars")}</Text>
 
             <FlatList
               data={PRESET_AVATARS as any}
@@ -211,12 +221,12 @@ export default function ProfileScreen() {
       <Modal visible={editNameOpen} transparent animationType="fade" onRequestClose={() => setEditNameOpen(false)}>
         <Pressable style={styles.modalBackdrop} onPress={() => setEditNameOpen(false)}>
           <Pressable style={styles.modalCard} onPress={() => {}}>
-            <Text style={styles.modalTitle}>Editar nombre</Text>
+            <Text style={styles.modalTitle}>{t("profile.editName")}</Text>
 
             <TextInput
               value={draftName}
               onChangeText={(v) => setDraftName(v.slice(0, 20))}
-              placeholder="Escribe tu nombre…"
+              placeholder={t("profile.namePlaceholder")}
               placeholderTextColor="rgba(74,74,74,0.45)"
               maxLength={20}
               style={styles.modalInput}
@@ -224,11 +234,11 @@ export default function ProfileScreen() {
 
             <View style={styles.modalBtns}>
               <Pressable onPress={() => setEditNameOpen(false)} style={({ pressed }) => [styles.modalBtn, pressed && { opacity: 0.9 }]}>
-                <Text style={styles.modalBtnText}>Cancelar</Text>
+                <Text style={styles.modalBtnText}>{t("profile.cancel")}</Text>
               </Pressable>
 
               <Pressable onPress={() => void saveName()} style={({ pressed }) => [styles.modalBtnPrimary, pressed && { opacity: 0.9 }]}>
-                <Text style={styles.modalBtnPrimaryText}>Guardar</Text>
+                <Text style={styles.modalBtnPrimaryText}>{t("profile.save")}</Text>
               </Pressable>
             </View>
           </Pressable>
@@ -245,7 +255,6 @@ const styles = StyleSheet.create({
     color: "rgba(74,74,74,0.75)",
   },
 
-  // ✅ perfil integrado
   profileRow: {
     marginTop: 10,
     flexDirection: "row",
@@ -301,7 +310,6 @@ const styles = StyleSheet.create({
   },
   removeAvatarText: { fontSize: 12, fontWeight: "900", color: "rgba(74,74,74,0.7)" },
 
-  // ✅ progreso (tu bloque)
   card: {
     marginTop: 12,
     backgroundColor: colors.primarySoft,
@@ -314,7 +322,6 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 16, fontWeight: "900", color: colors.text },
   cardLine: { fontSize: 13, fontWeight: "800", color: "rgba(74,74,74,0.7)" },
 
-  // ✅ modales
   modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.28)", padding: 18, justifyContent: "center" },
   modalCard: { backgroundColor: "#fff", borderRadius: 18, padding: 14, borderWidth: 1, borderColor: "rgba(198, 183, 226, 0.35)" },
   modalTitle: { fontSize: 15, fontWeight: "900", color: colors.text, marginBottom: 10 },

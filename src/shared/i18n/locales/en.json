@@ -3,9 +3,9 @@
     "home": "Home",
     "sos": "SOS",
     "breathing": "Breathe",
-    "mindfulness": "Mindfulness",
+    "mindfulness": "Mindful",
     "sounds": "Sounds",
-    "meditations": "Meditations",
+    "meditations": "Meditate",
     "journal": "Journal"
   },
   "nav": {
@@ -43,7 +43,15 @@
     "maxChars": "Max {{count}} characters",
     "streak": "🔥 Streak: {{days}} days",
     "totalCalm": "Total calm time: {{time}}",
-    "lastActivity": "Last activity: {{label}}"
+    "lastActivity": "Last activity: {{label}}",
+    "tapToEdit": "Tap to edit",
+    "removeAvatar": "Remove avatar",
+    "chooseAvatar": "Choose an avatar",
+    "pickFromGallery": "Choose from gallery",
+    "avatars": "Avatars",
+    "editName": "Edit name",
+    "cancel": "Cancel",
+    "save": "Save"
   },
   "language": {
     "title": "Language",
@@ -346,7 +354,70 @@
         ]
       }
     }
+  },
+  "journal": {
+    "title": "Journal",
+    "subtitleSingle": "Write and receive a guided reflection.",
+    "subtitleMultiple": "{{count}} conversations saved (max {{max}}).",
+
+    "currentConversation": "Current conversation:",
+    "change": "Switch",
+    "new": "New",
+
+    "empty": {
+      "title": "Start whenever you like",
+      "text": "Write an emotion or situation. You’ll receive a guided reflection.",
+      "clearAll": "Clear all history"
+    },
+
+    "alerts": {
+      "title": "Journal",
+      "writeSomething": "Write something before sending.",
+      "trimmed": "Your message was trimmed to {{count}} characters to keep the journal light.",
+      "trimNotice": "To keep the app lightweight, only the latest messages are saved."
+    },
+
+    "errors": {
+      "title": "Error",
+      "couldNotGenerate": "Could not generate the reflection."
+    },
+
+
+    "actions": {
+      "send": "Send",
+      "sending": "...",
+      "clearOne": "Clear this",
+      "clearAllTitle": "Clear all",
+      "clearAllText": "Delete all saved conversations?",
+      "clearOneTitle": "Delete conversation",
+      "clearOneText": "Delete only this conversation?",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+
+    "suggestions": {
+      "sos": "Open SOS 60s",
+      "breathing": "Go to Breathing",
+      "sounds": "Go to Sounds",
+      "mindfulness": "Mindfulness"
+    },
+
+    "modes": {
+      "suave": "Gentle",
+      "practico": "Practical",
+      "preguntas": "Questions",
+      "breve": "Brief"
+    },
+
+    "placeholder": "Write here…",
+
+    "picker": {
+      "title": "Conversations",
+      "messages": "{{count}} messages · Mode: {{mode}}",
+      "close": "Close"
+    }
   }
+
 
 
 
