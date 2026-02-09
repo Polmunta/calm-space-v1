@@ -13,10 +13,16 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
-      
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Necesitamos acceso a tus fotos para que puedas elegir un avatar.",
+        "NSCameraUsageDescription": "Necesitamos acceso a la cámara para que puedas hacer una foto de perfil."
+      }
     },
     "android": {
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon-foreground.png",
         "backgroundColor": "#ffffff"
@@ -28,7 +34,21 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-localization"
-    ]
+      "expo-localization",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Necesitamos acceso a tus fotos para que puedas elegir un avatar.",
+          "cameraPermission": "Necesitamos acceso a la cámara para que puedas hacer una foto de perfil."
+        }
+      ],
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "4c09e493-2c82-4265-818e-ee377ab6de1a"
+      }
+    },
+    "owner": "polmunta"
   }
 }
