@@ -1,9 +1,8 @@
 {
   "build": {
     "production": {
-      "android": {
-        "buildType": "app-bundle"
-      }
+      "android": {"buildType": "app-bundle"},
+      "ios": { "simulator": false }
     }
   }
 }
