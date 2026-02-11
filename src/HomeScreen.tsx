@@ -296,15 +296,18 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
     marginTop: 4,
+    width: "100%",
+    alignSelf: "stretch",
   },
   tile: {
-    width: TILE_WIDTH,
+    flexBasis: "48%",
+    maxWidth: "48%",
     backgroundColor: colors.primarySoft,
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
     borderColor: "rgba(198,183,226,0.35)",
-    marginBottom: GRID_GAP, // ✅ en vez de gap
+    marginBottom: 12, // ✅ en vez de gap
   },
   tileIconWrap: {
     width: 42,
