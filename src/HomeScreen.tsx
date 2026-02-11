@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  SafeAreaView,
   View,
   Text,
   StyleSheet,
@@ -8,11 +7,11 @@ import {
   ScrollView,
   Platform,
   Image,
+  Dimensions,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-
 import { useTranslation } from "react-i18next";
-
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { colors } from "./shared/theme/colors";
 import { screenStyles } from "./shared/ui/screenStyles";
@@ -21,10 +20,12 @@ const BRAND_LOGO = require("../assets/logo.png"); // ✅ usa tu logo 486x486
 
 export default function HomeScreen({ navigation }: any) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+
   return (
-    <SafeAreaView style={[screenStyles.container, { paddingTop: 0 }]}>
-      {/* ✅ FILA 1: iconos arriba (zona azul) */}
-      <View style={styles.topBar}>
+    <SafeAreaView style={[screenStyles.container, { paddingTop: 0 }]} edges={["top", "left", "right"]}>
+      {/* ✅ FILA 1: iconos arriba */}
+      <View style={[styles.topBar, { paddingTop: insets.top + (Platform.OS === "android" ? 10 : 6) }]}>
         <Pressable
           onPress={() => navigation.navigate("Profile")}
           style={({ pressed }) => [styles.topBtn, pressed && styles.pressedLite]}
@@ -42,16 +43,18 @@ export default function HomeScreen({ navigation }: any) {
           style={({ pressed }) => [styles.topBtn, pressed && styles.pressedLite]}
           hitSlop={12}
         >
-          <MaterialCommunityIcons
-            name="translate"
-            size={26}
-            color={colors.primary}
-          />
+          <MaterialCommunityIcons name="translate" size={26} color={colors.primary} />
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* ✅ FILA 2: marca (zona amarilla) */}
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          // ✅ evita que el contenido quede debajo del tabBar / botones del sistema
+          { paddingBottom: 22 + insets.bottom },
+        ]}
+      >
+        {/* ✅ FILA 2: marca */}
         <View style={styles.brand}>
           <View style={styles.brandRow}>
             <View style={styles.brandIconWrap}>
@@ -60,10 +63,9 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={styles.appName}>CalmSpace</Text>
           </View>
           <Text style={styles.appTagline}>{t("home.tagline")}</Text>
-
         </View>
 
-        {/* ✅ FILA 3: tarjetas más abajo (zona roja) */}
+        {/* ✅ FILA 3: tarjetas */}
         <View style={styles.cardsWrap}>
           {/* SOS */}
           <Pressable
@@ -82,63 +84,51 @@ export default function HomeScreen({ navigation }: any) {
               <View style={{ flex: 1 }}>
                 <Text style={styles.sosTitle}>{t("home.sosTitle")}</Text>
                 <Text style={styles.sosSub}>{t("home.sosSub")}</Text>
-
               </View>
             </View>
 
-            <MaterialCommunityIcons
-              name="chevron-right"
-              size={22}
-              color="rgba(74,74,74,0.6)"
-            />
+            <MaterialCommunityIcons name="chevron-right" size={22} color="rgba(74,74,74,0.6)" />
           </Pressable>
 
-          {/* Rutina rápida — pequeña y centrada */}
-         <View style={styles.quickRow}>
-           <Pressable
-              onPress={() => navigation.navigate("Routine")} // o directo a breathing si prefieres
+          {/* Rutina rápida */}
+          <View style={styles.quickRow}>
+            <Pressable
+              onPress={() => navigation.navigate("Routine")}
               style={({ pressed }) => [styles.quickMini, pressed && { opacity: 0.9 }]}
             >
               <View style={styles.quickMiniIcon}>
-              <MaterialCommunityIcons name="timer-outline" size={18} color={colors.primary} />
-             </View>
-             <Text style={styles.quickMiniText}>{t("home.routine")}</Text>
-
-           </Pressable>
+                <MaterialCommunityIcons name="timer-outline" size={18} color={colors.primary} />
+              </View>
+              <Text style={styles.quickMiniText}>{t("home.routine")}</Text>
+            </Pressable>
           </View>
-
-
 
           {/* Grid */}
           <View style={styles.grid}>
             <Tile
-             icon="weather-windy"
-             title={t("home.tileBreathingTitle")}
-             subtitle={t("home.tileBreathingSub")}
-             onPress={() => navigation.navigate("TabBreathing")}
+              icon="weather-windy"
+              title={t("home.tileBreathingTitle")}
+              subtitle={t("home.tileBreathingSub")}
+              onPress={() => navigation.navigate("TabBreathing")}
             />
-
             <Tile
-             icon="target"
-             title={t("home.tileMindTitle")}
-             subtitle={t("home.tileMindSub")}
-             onPress={() => navigation.navigate("TabMindfulness")}
+              icon="target"
+              title={t("home.tileMindTitle")}
+              subtitle={t("home.tileMindSub")}
+              onPress={() => navigation.navigate("TabMindfulness")}
             />
-
             <Tile
-             icon="music-note-outline"
-             title={t("home.tileSoundsTitle")}
-             subtitle={t("home.tileSoundsSub")}
-             onPress={() => navigation.navigate("TabSounds")}
+              icon="music-note-outline"
+              title={t("home.tileSoundsTitle")}
+              subtitle={t("home.tileSoundsSub")}
+              onPress={() => navigation.navigate("TabSounds")}
             />
-
             <Tile
-             icon="meditation"
-             title={t("home.tileMeditationsTitle")}
-             subtitle={t("home.tileMeditationsSub")}
-             onPress={() => navigation.navigate("TabMeditations")}
+              icon="meditation"
+              title={t("home.tileMeditationsTitle")}
+              subtitle={t("home.tileMeditationsSub")}
+              onPress={() => navigation.navigate("TabMeditations")}
             />
-
           </View>
 
           {/* Diario */}
@@ -158,15 +148,10 @@ export default function HomeScreen({ navigation }: any) {
               <View style={{ flex: 1 }}>
                 <Text style={styles.diaryTitle}>{t("home.diaryTitle")}</Text>
                 <Text style={styles.diarySub}>{t("home.diarySub")}</Text>
-
               </View>
             </View>
 
-            <MaterialCommunityIcons
-              name="chevron-right"
-              size={22}
-              color="rgba(74,74,74,0.6)"
-            />
+            <MaterialCommunityIcons name="chevron-right" size={22} color="rgba(74,74,74,0.6)" />
           </Pressable>
         </View>
       </ScrollView>
@@ -197,32 +182,35 @@ function Tile({
       <View style={styles.tileIconWrap}>
         <MaterialCommunityIcons name={icon} size={24} color={colors.primary} />
       </View>
-      <Text style={styles.tileTitle}>{title}</Text>
-      <Text style={styles.tileSub}>{subtitle}</Text>
+      <Text style={styles.tileTitle} numberOfLines={2}>
+        {title}
+      </Text>
+      <Text style={styles.tileSub} numberOfLines={2}>
+        {subtitle}
+      </Text>
     </Pressable>
   );
 }
+const H_PADDING = 16;
+const GRID_GAP = 12;
+const TILE_WIDTH =
+  (Dimensions.get("window").width - H_PADDING * 2 - GRID_GAP) / 2;
+
+
 
 const styles = StyleSheet.create({
   scrollContent: {
-    // ✅ Esto es la CLAVE: centrar verticalmente el contenido
     flexGrow: 1,
-    justifyContent: "center",
-    paddingHorizontal: 16,
-    paddingBottom: 22,
-    // “baja” todo el bloque sin depender de números locos
-    paddingTop: 12,
-  
     
+    paddingHorizontal: H_PADDING,
+    paddingTop: 12,
   },
 
-  // ✅ Zona azul: iconos arriba, un poco más abajo que el borde
   topBar: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 12,
-    paddingTop: Platform.OS === "android" ? 36 : 28,
     paddingBottom: 6,
   },
   topBtn: {
@@ -230,8 +218,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
 
- 
-  // ✅ Zona amarilla: CalmSpace más abajo (no pegado a iconos)
   brand: {
     alignItems: "center",
     marginTop: 24,
@@ -240,7 +226,6 @@ const styles = StyleSheet.create({
   brandRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
   },
   brandIconWrap: {
     width: 44,
@@ -252,6 +237,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(198, 183, 226, 0.45)",
     overflow: "hidden",
+    marginRight: 10, // ✅ en vez de gap
   },
   brandLogo: {
     width: "100%",
@@ -270,9 +256,8 @@ const styles = StyleSheet.create({
     color: "rgba(74,74,74,0.65)",
   },
 
-  // ✅ Zona roja: baja TODO el bloque de tarjetas
   cardsWrap: {
-    paddingTop: 28, // 🔥 esto es lo que las baja al “recuadro rojo”
+    paddingTop: 28,
   },
 
   sosCard: {
@@ -289,7 +274,6 @@ const styles = StyleSheet.create({
   sosLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
     flex: 1,
   },
   sosIconWrap: {
@@ -301,23 +285,26 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 1,
     borderColor: "rgba(198, 183, 226, 0.45)",
+    marginRight: 12, // ✅ en vez de gap
   },
   sosTitle: { fontSize: 16, fontWeight: "900", color: colors.text },
   sosSub: { marginTop: 4, fontSize: 12, fontWeight: "700", color: "rgba(74,74,74,0.65)" },
 
+  // ✅ Grid robusto (sin gap)
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
+    justifyContent: "space-between",
     marginTop: 4,
   },
   tile: {
-    width: "48%",
+    width: TILE_WIDTH,
     backgroundColor: colors.primarySoft,
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
     borderColor: "rgba(198,183,226,0.35)",
+    marginBottom: GRID_GAP, // ✅ en vez de gap
   },
   tileIconWrap: {
     width: 42,
@@ -343,7 +330,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(198,183,226,0.35)",
   },
-  diaryLeft: { flexDirection: "row", alignItems: "center", gap: 12, flex: 1 },
+  diaryLeft: { flexDirection: "row", alignItems: "center", flex: 1 },
   diaryIconWrap: {
     width: 42,
     height: 42,
@@ -353,6 +340,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 1,
     borderColor: "rgba(198,183,226,0.35)",
+    marginRight: 12, // ✅ en vez de gap
   },
   diaryTitle: { fontSize: 15, fontWeight: "900", color: colors.text },
   diarySub: { marginTop: 4, fontSize: 12, fontWeight: "700", color: "rgba(74,74,74,0.65)" },
@@ -365,44 +353,41 @@ const styles = StyleSheet.create({
     opacity: 0.85,
   },
 
- quickRow: {
-  alignItems: "center",
-  marginBottom: 12,
-},
+  quickRow: {
+    alignItems: "center",
+    marginBottom: 12,
+  },
 
-quickMini: {
-  flexDirection: "row",
-  alignItems: "center",
-  gap: 10,
-  paddingVertical: 10,
-  paddingHorizontal: 12,
-  borderRadius: 16,
-  backgroundColor: "rgba(255,255,255,0.92)",
-  borderWidth: 1,
-  borderColor: "rgba(198, 183, 226, 0.35)",
-  // tamaño: aprox mitad o menos que una tarjeta grande
-  width: "56%",
-  justifyContent: "center",
-},
+  quickMini: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: "rgba(255,255,255,0.92)",
+    borderWidth: 1,
+    borderColor: "rgba(198, 183, 226, 0.35)",
+    width: "56%",
+    justifyContent: "center",
+  },
 
-quickMiniIcon: {
-  width: 30,
-  height: 30,
-  borderRadius: 12,
-  backgroundColor: "rgba(198, 183, 226, 0.22)",
-  alignItems: "center",
-  justifyContent: "center",
-  borderWidth: 1,
-  borderColor: "rgba(198, 183, 226, 0.45)",
-},
+  quickMiniIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 12,
+    backgroundColor: "rgba(198, 183, 226, 0.22)",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(198, 183, 226, 0.45)",
+    marginRight: 10, // ✅ en vez de gap
+  },
 
-quickMiniText: {
-  fontSize: 13,
-  fontWeight: "900",
-  color: "rgba(74,74,74,0.78)",
-},
-
-
+  quickMiniText: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: "rgba(74,74,74,0.78)",
+  },
 
   pressableShadow: Platform.select({
     ios: {

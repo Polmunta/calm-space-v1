@@ -6,6 +6,8 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
+import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
+
 import { initAppLanguage } from "./src/shared/i18n/i18n";
 import { colors } from "./src/shared/theme/colors";
 
@@ -39,7 +41,6 @@ function HomeStack() {
   const { t } = useTranslation();
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
-      {/* ✅ ya NO necesitamos header aquí; lo pintamos dentro de Home */}
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Routine" component={RoutineScreen} options={{ title: t("nav.routine") }} />
     </Stack.Navigator>
@@ -88,7 +89,11 @@ function MeditationsStack() {
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
       <Stack.Screen name="Meditations" component={MeditationsScreen} options={{ title: t("nav.meditations") }} />
-      <Stack.Screen name="MeditationPlayer" component={MeditationPlayerScreen} options={{ title: t("nav.meditations") }} />
+      <Stack.Screen
+        name="MeditationPlayer"
+        component={MeditationPlayerScreen}
+        options={{ title: t("nav.meditations") }}
+      />
     </Stack.Navigator>
   );
 }
@@ -104,21 +109,33 @@ function JournalStack() {
 
 function Tabs() {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+
+  // ✅ Altura base + inset real (esto evita que el tabBar quede tapado)
+  const baseHeight = 58;
+  const bottomPad = Math.max(insets.bottom, 10);
 
   return (
     <Tab.Navigator
+      // ✅ Importantísimo: forzar el inset que debe respetar el tab bar
+      safeAreaInsets={{ bottom: insets.bottom }}
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: "rgba(74,74,74,0.55)",
+        tabBarHideOnKeyboard: true,
+
         tabBarStyle: {
           backgroundColor: "#fff",
           borderTopColor: "rgba(198, 183, 226, 0.35)",
           borderTopWidth: 1,
-          height: 74,
-          paddingTop: 10,
-          paddingBottom: Platform.OS === "android" ? 18 : 24,
+
+          // ✅ NO valores fijos para todos: usar el inset real
+          height: baseHeight + bottomPad,
+          paddingTop: 8,
+          paddingBottom: bottomPad,
         },
+
         tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
         tabBarIcon: ({ color, size }) => {
           const s = Math.max(22, size);
@@ -152,7 +169,7 @@ export default function App() {
   useEffect(() => {
     (async () => {
       try {
-        await initAppLanguage(); // ✅ carga idioma guardado (o sistema)
+        await initAppLanguage();
       } finally {
         setReady(true);
       }
@@ -162,35 +179,35 @@ export default function App() {
   if (!ready) return null;
 
   return (
-    <NavigationContainer>
-      {/* ✅ HEADER OFF SIEMPRE: se van las líneas/banners */}
-      <RootStack.Navigator screenOptions={{ headerShown: false }}>
-        <RootStack.Screen name="Tabs" component={Tabs} />
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <RootStack.Navigator screenOptions={{ headerShown: false }}>
+          <RootStack.Screen name="Tabs" component={Tabs} />
 
-        {/* Pantallas fuera de Tabs */}
-        <RootStack.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{
-            headerShown: true,
-            title: t("nav.profile"),
-            headerStyle: { backgroundColor: "#FAF9FC" },
-            headerTintColor: colors.primary,
-            headerTitleStyle: { fontWeight: "800", color: colors.primary },
-          }}
-        />
-        <RootStack.Screen
-          name="Language"
-          component={LanguageScreen}
-          options={{
-            headerShown: true,
-            title: t("nav.language"),
-            headerStyle: { backgroundColor: "#FAF9FC" },
-            headerTintColor: colors.primary,
-            headerTitleStyle: { fontWeight: "800", color: colors.primary },
-          }}
-        />
-      </RootStack.Navigator>
-    </NavigationContainer>
+          <RootStack.Screen
+            name="Profile"
+            component={ProfileScreen}
+            options={{
+              headerShown: true,
+              title: t("nav.profile"),
+              headerStyle: { backgroundColor: "#FAF9FC" },
+              headerTintColor: colors.primary,
+              headerTitleStyle: { fontWeight: "800", color: colors.primary },
+            }}
+          />
+          <RootStack.Screen
+            name="Language"
+            component={LanguageScreen}
+            options={{
+              headerShown: true,
+              title: t("nav.language"),
+              headerStyle: { backgroundColor: "#FAF9FC" },
+              headerTintColor: colors.primary,
+              headerTitleStyle: { fontWeight: "800", color: colors.primary },
+            }}
+          />
+        </RootStack.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
