@@ -15,6 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.polmunta.calmspacev1",
+      "buildNumber": "1",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Necesitamos acceso a tus fotos para que puedas elegir un avatar.",
         "NSCameraUsageDescription": "Necesitamos acceso a la cámara para que puedas hacer una foto de perfil.",
