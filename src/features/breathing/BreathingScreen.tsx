@@ -764,7 +764,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  circleText: { fontSize: 18, fontWeight: "900", color: colors.primary },
+  circleText: { fontSize: 35, fontWeight: "900", color: colors.primary },
 
   phaseLabel: { textAlign: "center", marginTop: 6, fontSize: 13, fontWeight: "800", color: "rgba(74,74,74,0.75)" },
 

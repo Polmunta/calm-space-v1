@@ -52,7 +52,10 @@
     "avatars": "Avatars",
     "editName": "Editar el nom",
     "cancel": "Cancel·lar",
-    "save": "Desar"
+    "save": "Desar",
+    "rateTitle": "Valora l'app",
+    "rateDescription": "Si t'està agradant l'app, ens ajudaria molt que ens poguessis valorar.",
+    "rateButton": "Valora ara"
 
   },
   "language": {

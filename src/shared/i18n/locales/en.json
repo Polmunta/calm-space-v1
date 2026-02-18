@@ -51,7 +51,10 @@
     "avatars": "Avatars",
     "editName": "Edit name",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "rateTitle": "Rate the app",
+    "rateDescription": "If you're enjoying the app, it would really help us if you could leave a rating.",
+    "rateButton": "Rate now"
   },
   "language": {
     "title": "Language",

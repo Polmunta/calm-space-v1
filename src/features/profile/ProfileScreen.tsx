@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, Pressable, Image, Modal, FlatList } 
 import * as ImagePicker from "expo-image-picker";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import { openStoreReview } from "../../shared/utils/openStoreReview";
 
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { colors } from "../../shared/theme/colors";
@@ -183,6 +184,22 @@ export default function ProfileScreen() {
         <Text style={styles.cardLine}>
           {t("profile.lastActivity", { label: lastActivityLabel })}
         </Text>
+      </View>
+
+
+      <View style={styles.rateCard}>
+        <Text style={styles.rateTitle}>{t("profile.rateTitle")}</Text>
+
+        <Text style={styles.rateDesc}>
+          {t("profile.rateDescription")}
+        </Text>
+
+        <Pressable
+          onPress={() => void openStoreReview()}
+          style={({ pressed }) => [styles.rateBtn, pressed && { opacity: 0.9 }]}
+        >
+          <Text style={styles.rateBtnText}>{t("profile.rateButton")}</Text>
+        </Pressable>
       </View>
 
       {/* Modal: elegir avatar */}
@@ -385,4 +402,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalBtnPrimaryText: { fontWeight: "900", color: "#fff" },
+
+  rateCard: {
+  marginTop: 12,
+  backgroundColor: "rgba(255,255,255,0.92)",
+  borderRadius: 18,
+  padding: 16,
+  borderWidth: 1,
+  borderColor: "rgba(198, 183, 226, 0.35)",
+  gap: 8,
+  },
+  rateTitle: { fontSize: 16, fontWeight: "900", color: colors.text },
+  rateDesc: { fontSize: 13, fontWeight: "800", color: "rgba(74,74,74,0.7)" },
+  rateBtn: {
+    marginTop: 6,
+    alignSelf: "flex-start",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 14,
+    backgroundColor: colors.primary,
+  },
+  rateBtnText: { fontSize: 13, fontWeight: "900", color: "#fff" },
+
 });

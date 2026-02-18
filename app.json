@@ -50,6 +50,7 @@
       "expo-font"
     ],
     "extra": {
+      "iosAppStoreId": "6759118158",
       "eas": {
         "projectId": "4c09e493-2c82-4265-818e-ee377ab6de1a"
       }

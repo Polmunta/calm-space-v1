@@ -51,7 +51,10 @@
     "avatars": "Avatares",
     "editName": "Editar nombre",
     "cancel": "Cancelar",
-    "save": "Guardar"
+    "save": "Guardar",
+    "rateTitle": "Valorar app",
+    "rateDescription": "Si te está gustando la app, nos ayudaría mucho que pudieras valorarnos.",
+    "rateButton": "Valorar ahora"
   },
   "language": {
     "title": "Idioma",
