@@ -4,6 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { openStoreReview } from "../../shared/utils/openStoreReview";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { colors } from "../../shared/theme/colors";
@@ -35,6 +36,12 @@ const PRESET_AVATARS = [
 
 export default function ProfileScreen() {
   const { t } = useTranslation();
+  const loadProgress = async () => {
+  const p = await getProgress();
+  setStreak(p.streak ?? 0);
+  setTotalCalmSeconds(p.totalCalmSeconds ?? 0);
+  setLastActivityLabel(p.lastActivityLabel ?? "—");
+};
 
   const [name, setNameState] = useState("");
 
@@ -59,12 +66,15 @@ export default function ProfileScreen() {
       const a = await getProfileAvatarUri();
       setAvatarUri(a);
 
-      const p = await getProgress();
-      setStreak(p.streak ?? 0);
-      setTotalCalmSeconds(p.totalCalmSeconds ?? 0);
-      setLastActivityLabel(p.lastActivityLabel ?? "—");
+      await loadProgress();
     })();
   }, []);
+
+   useFocusEffect(
+  React.useCallback(() => {
+    void loadProgress();
+  }, [])
+  );
 
   const openEditName = () => {
     setDraftName(name);

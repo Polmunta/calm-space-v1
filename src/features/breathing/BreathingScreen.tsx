@@ -17,7 +17,7 @@ import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
 import { useTranslation } from "react-i18next";
 
-
+import { recordActivity } from "../profile/progress.storage";
 import { screenStyles } from "../../shared/ui/screenStyles";
 import { colors } from "../../shared/theme/colors";
 
@@ -347,15 +347,24 @@ export default function BreathingScreen({ route, navigation }: any) {
     [animateToOver, glow, mode.exhale, mode.hold, mode.inhale, mode.rest, stopAnimations]
   );
 
-  // ✅ auto-stop si hay límite
+    // ✅ auto-stop si hay límite + registrar progreso al completar
   useEffect(() => {
     if (!runningRef.current) return;
     if (totalLimitSec == null) return;
 
     if (totalElapsed >= totalLimitSec) {
+      // Evita doble ejecución mientras stopEverything es async
+      runningRef.current = false;
+
+      // Guardar progreso (racha/total/última actividad)
+      void recordActivity({
+        seconds: totalLimitSec,
+        label: `${t("breathing.title")} · ${t(`breathing.modes.${modeId}.title`)}`,
+      });
+
       void stopEverything();
     }
-  }, [totalElapsed, totalLimitSec, stopEverything]);
+  }, [totalElapsed, totalLimitSec, stopEverything, modeId, t]);
 
   // ✅ ESTO es lo que te estaba “rompiendo”: ahora es estable con useCallback
   const startCountdownThenRun = useCallback(async () => {

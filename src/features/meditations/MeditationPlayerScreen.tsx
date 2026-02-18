@@ -6,6 +6,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import i18n from "../../shared/i18n/i18n";
+import { recordActivity } from "../profile/progress.storage";
 
 
 
@@ -30,6 +31,7 @@ export default function MeditationPlayerScreen({ route }: any) {
     const { t } = useTranslation();
 
   const { id } = route.params as { id: "meditacion" | "relajacion" };
+  const finishRecordedRef = useRef(false);
 
   const session: MeditationSession | undefined = useMemo(
     () => SESSIONS.find((s) => s.id === id),
@@ -105,6 +107,7 @@ export default function MeditationPlayerScreen({ route }: any) {
   const loadIfNeeded = async () => {
     if (!session) return;
     if (soundRef.current) return;
+    finishRecordedRef.current = false;
 
     const { sound } = await Audio.Sound.createAsync(getSessionAudio(session), {
 
@@ -129,7 +132,23 @@ export default function MeditationPlayerScreen({ route }: any) {
       if (!draggingRef.current) setPosSec(p);
       setDurSec(d);
 
-      if (st?.didJustFinish) setIsPlaying(false);
+      if (st?.didJustFinish) {
+        setIsPlaying(false);
+
+        if (!finishRecordedRef.current) {
+          finishRecordedRef.current = true;
+
+          const seconds = Math.max(
+            Math.floor((st.durationMillis ?? 0) / 1000),
+            Math.floor((st.positionMillis ?? 0) / 1000)
+          );
+
+          void recordActivity({
+            seconds,
+            label: t(`meditations.items.${session.id}.title`, { defaultValue: session.title }),
+          });
+        }
+      }
     });
 
     void setLastSession(session.id);
